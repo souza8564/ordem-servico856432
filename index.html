@@ -821,21 +821,32 @@
         // --- FIRESTORE: CRUD SOLICITANTES ---
 let solicitantes = [];
 
-// Carrega solicitantes do Firestore ao iniciar
-async function carregarSolicitantesFirestore() {
-    const snapshot = await db.collection('solicitantes').get();
-    solicitantes = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    atualizarTabelaSolicitantes();
-    atualizarSelectSolicitantes();
-}
-
 // Adiciona solicitante no Firestore
 async function adicionarSolicitanteFirestore(solicitante) {
-    const docRef = await db.collection('solicitantes').add(solicitante);
-    solicitante.id = docRef.id;
-    solicitantes.push(solicitante);
-    atualizarTabelaSolicitantes();
-    atualizarSelectSolicitantes();
+    try {
+        console.log('Salvando solicitante no Firestore...', solicitante);
+        const docRef = await db.collection('solicitantes').add(solicitante);
+        solicitante.id = docRef.id;
+        console.log('Solicitante salvo com sucesso no Firestore:', solicitante);
+        await carregarSolicitantesFirestore();
+    } catch (e) {
+        console.error('Erro ao salvar solicitante no Firestore:', e);
+        alert('Erro ao salvar solicitante no Firestore: ' + (e.message || e));
+    }
+}
+
+// Carrega solicitantes do Firestore ao iniciar
+async function carregarSolicitantesFirestore() {
+    try {
+        const snapshot = await db.collection('solicitantes').get();
+        solicitantes = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        console.log('Solicitantes carregados do Firestore:', solicitantes);
+        atualizarTabelaSolicitantes();
+        atualizarSelectSolicitantes();
+    } catch (e) {
+        console.error('Erro ao carregar solicitantes do Firestore:', e);
+        alert('Erro ao carregar solicitantes do Firestore: ' + (e.message || e));
+    }
 }
 
 // Remove solicitante do Firestore
@@ -871,6 +882,7 @@ function configurarFormularios() {
             }
             await adicionarSolicitanteFirestore({ nome, setor, contato });
             solicitanteForm.reset();
+            // Mensagem de sucesso só se não houve erro
             alert('Solicitante cadastrado com sucesso!');
         };
     }
@@ -1055,7 +1067,20 @@ async function editarSolicitante(solicitanteId) {
 }
 
 // Ao iniciar, carrega solicitantes do Firestore
-carregarSolicitantesFirestore();
+// Aguarda o Firebase estar pronto
+if (typeof firebase !== 'undefined' && typeof db !== 'undefined') {
+    carregarSolicitantesFirestore();
+} else {
+    document.addEventListener('DOMContentLoaded', function() {
+        setTimeout(() => {
+            if (typeof firebase !== 'undefined' && typeof db !== 'undefined') {
+                carregarSolicitantesFirestore();
+            } else {
+                alert('Firebase não foi carregado corretamente. Verifique sua conexão e scripts.');
+            }
+        }, 1000);
+    });
+}
     </script>
 </body>
 </html>
