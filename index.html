@@ -762,27 +762,62 @@ const db = firebase.firestore();
         let ultimoNumeroOS = parseInt(localStorage.getItem('ultimoNumeroOS')) || 0;
 
         // Inicialização do sistema
-        document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function() {
+    // Função para carregar solicitantes do Firestore
+    function carregarSolicitantesFirestore(callback) {
+        db.collection('solicitantes').get().then(snapshot => {
+            solicitantes = [];
+            snapshot.forEach(doc => {
+                let s = doc.data();
+                s.id = s.id || doc.id;
+                solicitantes.push(s);
+            });
+            if (callback) callback();
+        });
+    }
+    // Função para carregar técnicos do Firestore
+    function carregarTecnicosFirestore(callback) {
+        db.collection('tecnicos').get().then(snapshot => {
+            tecnicos = [];
+            snapshot.forEach(doc => {
+                let t = doc.data();
+                t.id = t.id || doc.id;
+                tecnicos.push(t);
+            });
+            if (callback) callback();
+        });
+    }
+
+    // Carrega dados do Firestore e só depois inicializa interface
+    carregarSolicitantesFirestore(function() {
+        carregarTecnicosFirestore(function() {
             // Configura navegação entre abas
             const sidebarBtns = document.querySelectorAll('.sidebar-btn');
             const tabContents = document.querySelectorAll('.tabcontent');
-            
             sidebarBtns.forEach(btn => {
                 btn.addEventListener('click', function() {
-                    // Remove 'active' de todos os botões e abas
                     sidebarBtns.forEach(b => b.classList.remove('active'));
                     tabContents.forEach(tab => tab.classList.remove('active'));
-                    // Adiciona 'active' ao botão clicado e à aba correspondente
                     this.classList.add('active');
                     const tabId = this.getAttribute('data-tab');
                     const tab = document.getElementById(tabId);
                     if (tab) tab.classList.add('active');
                     // Atualiza dados específicos da aba quando aberta
                     if (tabId === 'dashboard') atualizarDashboard();
-                    if (tabId === 'solicitantes') atualizarTabelaSolicitantes();
-                    if (tabId === 'tecnicos') atualizarTabelaTecnicos();
+                    if (tabId === 'solicitantes') {
+                        carregarSolicitantesFirestore(function() {
+                            atualizarTabelaSolicitantes();
+                            atualizarSelectSolicitantes();
+                        });
+                    }
+                    if (tabId === 'tecnicos') {
+                        carregarTecnicosFirestore(function() {
+                            atualizarTabelaTecnicos();
+                            atualizarSelectTecnicos();
+                            atualizarSelectFiltroTecnicos();
+                        });
+                    }
                     if (tabId === 'gerenciar-os') {
-                        // Sincroniza o array local ordensServico com o Firestore antes de atualizar a tabela
                         db.collection('ordensServico').orderBy('numero', 'desc').get().then(snapshot => {
                             ordensServico = [];
                             snapshot.forEach(doc => {
@@ -797,7 +832,6 @@ const db = firebase.firestore();
                     if (tabId === 'relatorios') atualizarRelatorios();
                 });
             });
-            
             // Garante que a primeira aba esteja ativa ao carregar
             const btnAtivo = document.querySelector('.sidebar-btn.active');
             if (btnAtivo) {
@@ -805,27 +839,24 @@ const db = firebase.firestore();
                 const tab = document.getElementById(tabId);
                 if (tab) tab.classList.add('active');
             }
-            
             // Inicializa selects
             atualizarSelectSolicitantes();
             atualizarSelectTecnicos();
             atualizarSelectFiltroTecnicos();
-            
             // Configura formulários
             configurarFormularios();
-            
             // Atualiza dashboard
             atualizarDashboard();
-            
             // Atualiza tabelas
             atualizarTabelaSolicitantes();
             atualizarTabelaTecnicos();
             atualizarTabelaOS();
             atualizarTabelaHistorico();
-            
             // Configura data atual no formulário de OS
             document.getElementById('os-data').valueAsDate = new Date();
         });
+    });
+});
 
         // Funções para atualizar selects
         function atualizarSelectSolicitantes() {
@@ -874,67 +905,71 @@ const db = firebase.firestore();
             if (solicitanteForm) {
                 solicitanteForm.onsubmit = function(e) {
                     e.preventDefault();
-                    
                     const nome = document.getElementById('solicitante-nome').value.trim();
                     const setor = document.getElementById('solicitante-setor').value;
                     const contato = document.getElementById('solicitante-contato').value.trim();
-                    
                     if (!nome || !setor || !contato) {
                         alert('Preencha todos os campos obrigatórios.');
                         return;
                     }
-                    
                     // Gera ID único
                     const id = Date.now().toString();
-                    
-                    solicitantes.push({
-                        id,
-                        nome,
-                        setor,
-                        contato
+                    const novoSolicitante = { id, nome, setor, contato };
+                    // Salva no Firestore
+                    db.collection('solicitantes').add(novoSolicitante).then(() => {
+                        // Recarrega do Firestore para garantir atualização em todos os dispositivos
+                        db.collection('solicitantes').get().then(snapshot => {
+                            solicitantes = [];
+                            snapshot.forEach(doc => {
+                                let s = doc.data();
+                                s.id = s.id || doc.id;
+                                solicitantes.push(s);
+                            });
+                            atualizarTabelaSolicitantes();
+                            atualizarSelectSolicitantes();
+                            solicitanteForm.reset();
+                            alert('Solicitante cadastrado com sucesso!');
+                        });
+                    }).catch((error) => {
+                        alert('Erro ao salvar solicitante no banco de dados: ' + error.message);
                     });
-                    
-                    localStorage.setItem('solicitantes', JSON.stringify(solicitantes));
-                    atualizarTabelaSolicitantes();
-                    atualizarSelectSolicitantes();
-                    
-                    solicitanteForm.reset();
-                    alert('Solicitante cadastrado com sucesso!');
                 };
             }
-            
+
             // Formulário de técnico
             const tecnicoForm = document.getElementById('tecnicoForm');
             if (tecnicoForm) {
                 tecnicoForm.onsubmit = function(e) {
                     e.preventDefault();
-                    
                     const nome = document.getElementById('tecnico-nome').value.trim();
                     const especialidade = document.getElementById('tecnico-especialidade').value;
                     const contato = document.getElementById('tecnico-contato').value.trim();
-                    
                     if (!nome || !especialidade || !contato) {
                         alert('Preencha todos os campos obrigatórios.');
                         return;
                     }
-                    
                     // Gera ID único
                     const id = Date.now().toString();
-                    
-                    tecnicos.push({
-                        id,
-                        nome,
-                        especialidade,
-                        contato
+                    const novoTecnico = { id, nome, especialidade, contato };
+                    // Salva no Firestore
+                    db.collection('tecnicos').add(novoTecnico).then(() => {
+                        // Recarrega do Firestore para garantir atualização em todos os dispositivos
+                        db.collection('tecnicos').get().then(snapshot => {
+                            tecnicos = [];
+                            snapshot.forEach(doc => {
+                                let t = doc.data();
+                                t.id = t.id || doc.id;
+                                tecnicos.push(t);
+                            });
+                            atualizarTabelaTecnicos();
+                            atualizarSelectTecnicos();
+                            atualizarSelectFiltroTecnicos();
+                            tecnicoForm.reset();
+                            alert('Técnico cadastrado com sucesso!');
+                        });
+                    }).catch((error) => {
+                        alert('Erro ao salvar técnico no banco de dados: ' + error.message);
                     });
-                    
-                    localStorage.setItem('tecnicos', JSON.stringify(tecnicos));
-                    atualizarTabelaTecnicos();
-                    atualizarSelectTecnicos();
-                    atualizarSelectFiltroTecnicos();
-                    
-                    tecnicoForm.reset();
-                    alert('Técnico cadastrado com sucesso!');
                 };
             }
             
