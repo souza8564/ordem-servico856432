@@ -968,7 +968,7 @@
                     
                     // Pergunta se deseja imprimir a OS
                     if (confirm('Deseja imprimir esta ordem de serviço?')) {
-                        visualizarOS(id);
+            abrirOSNovaPagina(id);
                     }
                 };
             }
@@ -1103,15 +1103,14 @@
                                   os.status === 'concluida' ? 'Concluída' : 'Cancelada';
                 
                 const statusSelect = `
-        <select class="status-select" data-id="${os.id}">
-            <option value="pendente" ${os.status === 'pendente' ? 'selected' : ''}>Pendente</option>
-            <option value="andamento" ${os.status === 'andamento' ? 'selected' : ''}>Em Andamento</option>
-            <option value="concluida" ${os.status === 'concluida' ? 'selected' : ''}>Concluída</option>
-            <option value="cancelada" ${os.status === 'cancelada' ? 'selected' : ''}>Cancelada</option>
-        </select>
-    `;
-
-                tr = document.createElement('tr');
+<select class="status-select" data-id="${os.id}">
+    <option value="pendente" ${os.status === 'pendente' ? 'selected' : ''}>Pendente</option>
+    <option value="andamento" ${os.status === 'andamento' ? 'selected' : ''}>Em Andamento</option>
+    <option value="concluida" ${os.status === 'concluida' ? 'selected' : ''}>Concluída</option>
+    <option value="cancelada" ${os.status === 'cancelada' ? 'selected' : ''}>Cancelada</option>
+</select>
+`;
+                const tr = document.createElement('tr');
                 tr.innerHTML = `
                     <td>#${os.numero}</td>
                     <td>${solicitante.nome || 'Solicitante não encontrado'}</td>
@@ -1134,7 +1133,6 @@
                     editarOS(osId);
                 });
             });
-            
             document.querySelectorAll('.btn-view').forEach(btn => {
                 btn.addEventListener('click', function() {
                     const osId = this.getAttribute('data-id');
@@ -1447,14 +1445,32 @@
         function visualizarOS(osId) {
             const os = ordensServico.find(o => o.id === osId);
             if (!os) return;
-            
             const solicitante = solicitantes.find(s => s.id === os.solicitanteId) || {};
             const tecnico = tecnicos.find(t => t.id === os.tecnicoId) || {};
-            
             let statusText = os.status === 'pendente' ? 'Pendente' :
                             os.status === 'andamento' ? 'Em Andamento' :
                             os.status === 'concluida' ? 'Concluída' : 'Cancelada';
-            
+            // Corrige exibição da data para não subtrair um dia
+            function formatarDataInput(dataString) {
+                if (!dataString) return '';
+                // Não criar objeto Date, apenas reformatar yyyy-mm-dd para dd/mm/yyyy
+                const [ano, mes, dia] = dataString.split('-');
+                return `${dia}/${mes}/${ano}`;
+            }
+            // Diagnóstico técnico
+            let diagnosticoHtml = '';
+            if (os.diagnostico && os.diagnostico.trim() !== '') {
+                diagnosticoHtml = `<p>${os.diagnostico.replace(/\n/g, '<br>')}</p>`;
+            } else {
+                diagnosticoHtml = `<p style="min-height:24px; border-bottom:1px solid #ccc; margin-bottom:4px;"></p><p style="min-height:24px; border-bottom:1px solid #ccc;"></p>`;
+            }
+            // Solução aplicada
+            let solucaoHtml = '';
+            if (os.solucao && os.solucao.trim() !== '') {
+                solucaoHtml = `<p>${os.solucao.replace(/\n/g, '<br>')}</p>`;
+            } else {
+                solucaoHtml = `<p style="min-height:24px; border-bottom:1px solid #ccc; margin-bottom:4px;"></p><p style="min-height:24px; border-bottom:1px solid #ccc;"></p>`;
+            }
             const html = `
                 <style>
                     body { font-family: Arial, sans-serif; background: #fff; margin: 0; padding: 0; }
@@ -1499,7 +1515,7 @@
                 
                 <div class="os-header">
                     <h1>ORDEM DE SERVIÇO #${os.numero}</h1>
-                    <div class="subtitle">${statusText} - ${formatarData(os.data)}</div>
+                    <div class="subtitle">${statusText} - ${formatarDataInput(os.data)}</div>
                 </div>
                 <div class="os-info">
                     <div class="os-info-block">
@@ -1513,7 +1529,7 @@
                         <p><strong>Equipamento:</strong> ${os.equipamento}</p>
                         <p><strong>Patrimônio:</strong> ${os.serial || 'Não informado'}</p>
                         <p><strong>Técnico:</strong> ${tecnico.nome || 'Não informado'} (${tecnico.especialidade || 'Não informado'})</p>
-                        <p><strong>Prazo:</strong> ${os.prazo ? formatarData(os.prazo) : 'Não definido'}</p>
+                        <p><strong>Prazo:</strong> ${os.prazo ? formatarDataInput(os.prazo) : 'Não definido'}</p>
                     </div>
                 </div>
                 <div class="os-details">
@@ -1522,13 +1538,11 @@
                 </div>
                 <div class="os-details">
                     <h3>Diagnóstico Técnico</h3>
-                    <p style="min-height:24px; border-bottom:1px solid #ccc; margin-bottom:4px;"></p>
-                    <p style="min-height:24px; border-bottom:1px solid #ccc;"></p>
+                    ${diagnosticoHtml}
                 </div>
                 <div class="os-details">
                     <h3>Solução Aplicada</h3>
-                    <p style="min-height:24px; border-bottom:1px solid #ccc; margin-bottom:4px;"></p>
-                    <p style="min-height:24px; border-bottom:1px solid #ccc;"></p>
+                    ${solucaoHtml}
                 </div>
                 <div class="os-signatures">
                     <div class="os-signature">
@@ -1542,7 +1556,6 @@
                 </div>
                 <button class="print-button" onclick="window.print()">Imprimir OS</button>
             `;
-            
             document.getElementById('os-print-content').innerHTML = html;
             document.getElementById('modal-os').style.display = 'block';
         }
@@ -1659,6 +1672,26 @@ function abrirOSNovaPagina(osId) {
     let statusText = os.status === 'pendente' ? 'Pendente' :
         os.status === 'andamento' ? 'Em Andamento' :
         os.status === 'concluida' ? 'Concluída' : 'Cancelada';
+    // Função para formatar data no padrão dd/mm/yyyy
+    function formatarDataInput(dataString) {
+        if (!dataString) return '';
+        const [ano, mes, dia] = dataString.split('-');
+        return `${dia}/${mes}/${ano}`;
+    }
+    // Diagnóstico técnico
+    let diagnosticoHtml = '';
+    if (os.diagnostico && os.diagnostico.trim() !== '') {
+        diagnosticoHtml = `<p>${os.diagnostico.replace(/\n/g, '<br>')}</p>`;
+    } else {
+        diagnosticoHtml = `<p style="min-height:24px; border-bottom:1px solid #ccc; margin-bottom:4px;"></p><p style="min-height:24px; border-bottom:1px solid #ccc;"></p>`;
+    }
+    // Solução aplicada
+    let solucaoHtml = '';
+    if (os.solucao && os.solucao.trim() !== '') {
+        solucaoHtml = `<p>${os.solucao.replace(/\n/g, '<br>')}</p>`;
+    } else {
+        solucaoHtml = `<p style="min-height:24px; border-bottom:1px solid #ccc; margin-bottom:4px;"></p><p style="min-height:24px; border-bottom:1px solid #ccc;"></p>`;
+    }
     const html = `<!DOCTYPE html>
 <html lang='pt-BR'>
 <head>
@@ -1709,7 +1742,7 @@ function abrirOSNovaPagina(osId) {
     <div class='os-container'>
         <div class='os-header'>
             <h1>ORDEM DE SERVIÇO #${os.numero}</h1>
-            <div class='subtitle'>${statusText} - ${formatarData(os.data)}</div>
+            <div class='subtitle'>${statusText} - ${formatarDataInput(os.data)}</div>
         </div>
         <div class='os-info'>
             <div class='os-info-block'>
@@ -1723,7 +1756,7 @@ function abrirOSNovaPagina(osId) {
                 <p><strong>Equipamento:</strong> ${os.equipamento}</p>
                 <p><strong>Patrimônio:</strong> ${os.serial || 'Não informado'}</p>
                 <p><strong>Técnico:</strong> ${tecnico.nome || 'Não informado'} (${tecnico.especialidade || 'Não informado'})</p>
-                <p><strong>Prazo:</strong> ${os.prazo ? formatarData(os.prazo) : 'Não definido'}</p>
+                <p><strong>Prazo:</strong> ${os.prazo ? formatarDataInput(os.prazo) : 'Não definido'}</p>
             </div>
         </div>
         <div class='os-details'>
@@ -1732,13 +1765,11 @@ function abrirOSNovaPagina(osId) {
         </div>
         <div class='os-details'>
             <h3>Diagnóstico Técnico</h3>
-            <p style="min-height:24px; border-bottom:1px solid #ccc; margin-bottom:4px;"></p>
-            <p style="min-height:24px; border-bottom:1px solid #ccc;"></p>
+            ${diagnosticoHtml}
         </div>
         <div class='os-details'>
             <h3>Solução Aplicada</h3>
-            <p style="min-height:24px; border-bottom:1px solid #ccc; margin-bottom:4px;"></p>
-            <p style="min-height:24px; border-bottom:1px solid #ccc;"></p>
+            ${solucaoHtml}
         </div>
         <div class='os-signatures'>
             <div class='os-signature'>
@@ -1755,8 +1786,21 @@ function abrirOSNovaPagina(osId) {
 </body>
 </html>`;
     const novaJanela = window.open('', '_blank');
+    if (!novaJanela) {
+        alert('Não foi possível abrir a nova janela. Verifique se o bloqueador de pop-ups está ativado.');
+        return;
+    }
+    // Aguarda a nova janela carregar antes de escrever o conteúdo
     novaJanela.document.write(html);
     novaJanela.document.close();
+    // Garante que o conteúdo seja renderizado antes de chamar print (em navegadores que suportam)
+    novaJanela.onload = function() {
+        novaJanela.focus();
+    };
+    // Fallback para browsers que não disparam onload corretamente
+    setTimeout(function() {
+        novaJanela.focus();
+    }, 300);
 }
     </script>
 </body>
