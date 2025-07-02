@@ -734,7 +734,27 @@
         </div>
     </div>
 
+    <!-- Firebase App (core) -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<!-- Firestore Database -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
     <script>
+        // Configuração do Firebase
+const firebaseConfig = {
+  apiKey: "AIzaSyD4FH7GjivSwsnhqCGvYdYd6AYpLrulGRQ",
+  authDomain: "ordens-servico-37369.firebaseapp.com",
+  projectId: "ordens-servico-37369",
+  storageBucket: "ordens-servico-37369.firebasestorage.app",
+  messagingSenderId: "956106820939",
+  appId: "1:956106820939:web:fb5df0102c23c506036cce",
+  measurementId: "G-15FMG1E6BM"
+};
+
+// Inicializa o Firebase
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
         // Banco de dados local
         let solicitantes = JSON.parse(localStorage.getItem('solicitantes')) || [];
         let tecnicos = JSON.parse(localStorage.getItem('tecnicos')) || [];
@@ -752,18 +772,27 @@
                     // Remove 'active' de todos os botões e abas
                     sidebarBtns.forEach(b => b.classList.remove('active'));
                     tabContents.forEach(tab => tab.classList.remove('active'));
-                    
                     // Adiciona 'active' ao botão clicado e à aba correspondente
                     this.classList.add('active');
                     const tabId = this.getAttribute('data-tab');
                     const tab = document.getElementById(tabId);
                     if (tab) tab.classList.add('active');
-                    
                     // Atualiza dados específicos da aba quando aberta
                     if (tabId === 'dashboard') atualizarDashboard();
                     if (tabId === 'solicitantes') atualizarTabelaSolicitantes();
                     if (tabId === 'tecnicos') atualizarTabelaTecnicos();
-                    if (tabId === 'gerenciar-os') atualizarTabelaOS();
+                    if (tabId === 'gerenciar-os') {
+                        // Sincroniza o array local ordensServico com o Firestore antes de atualizar a tabela
+                        db.collection('ordensServico').orderBy('numero', 'desc').get().then(snapshot => {
+                            ordensServico = [];
+                            snapshot.forEach(doc => {
+                                let os = doc.data();
+                                os.id = doc.id;
+                                ordensServico.push(os);
+                            });
+                            atualizarTabelaOS();
+                        });
+                    }
                     if (tabId === 'historico-os') atualizarTabelaHistorico();
                     if (tabId === 'relatorios') atualizarRelatorios();
                 });
@@ -914,7 +943,6 @@
             if (osForm) {
                 osForm.onsubmit = function(e) {
                     e.preventDefault();
-                    
                     const solicitanteId = document.getElementById('os-solicitante').value;
                     const setor = document.getElementById('os-setor').value;
                     const equipamento = document.getElementById('os-equipamento').value.trim();
@@ -926,20 +954,17 @@
                     const diagnostico = document.getElementById('os-diagnostico').value.trim();
                     const solucao = document.getElementById('os-solucao').value.trim();
                     const status = document.getElementById('os-status').value;
-                    
                     if (!solicitanteId || !setor || !equipamento || !tecnicoId || !data || !problema) {
                         alert('Preencha todos os campos obrigatórios.');
                         return;
                     }
-                    
                     // Incrementa número da OS
                     ultimoNumeroOS++;
                     localStorage.setItem('ultimoNumeroOS', ultimoNumeroOS);
-                    
                     // Gera ID único
                     const id = Date.now().toString();
-                    
-                    ordensServico.push({
+                    // Salvar OS no Firestore
+                    db.collection('ordensServico').add({
                         id,
                         numero: ultimoNumeroOS,
                         solicitanteId,
@@ -954,22 +979,21 @@
                         solucao,
                         status,
                         dataConclusao: status === 'concluida' ? new Date().toISOString().split('T')[0] : null
+                    }).then((docRef) => {
+                        // Aguarda a gravação e só então atualiza a tabela
+                        atualizarTabelaOS();
+                        atualizarTabelaHistorico();
+                        atualizarDashboard();
+                        osForm.reset();
+                        document.getElementById('os-data').valueAsDate = new Date();
+                        alert(`Ordem de Serviço #${ultimoNumeroOS} cadastrada com sucesso!`);
+                        // Pergunta se deseja imprimir a OS
+                        if (confirm('Deseja imprimir esta ordem de serviço?')) {
+                            abrirOSNovaPagina(id);
+                        }
+                    }).catch((error) => {
+                        alert('Erro ao salvar OS no banco de dados: ' + error.message);
                     });
-                    
-                    localStorage.setItem('ordensServico', JSON.stringify(ordensServico));
-                    atualizarTabelaOS();
-                    atualizarTabelaHistorico();
-                    atualizarDashboard();
-                    
-                    osForm.reset();
-                    document.getElementById('os-data').valueAsDate = new Date();
-                    
-                    alert(`Ordem de Serviço #${ultimoNumeroOS} cadastrada com sucesso!`);
-                    
-                    // Pergunta se deseja imprimir a OS
-                    if (confirm('Deseja imprimir esta ordem de serviço?')) {
-            abrirOSNovaPagina(id);
-                    }
                 };
             }
             
@@ -1069,40 +1093,42 @@
         function atualizarTabelaOS() {
             const tbody = document.querySelector('#tabela-os tbody');
             if (!tbody) return;
-            
             tbody.innerHTML = '';
-            
+
             const filtroStatus = document.getElementById('filtro-status').value;
             const filtroTecnico = document.getElementById('filtro-tecnico').value;
-            
-            let osFiltradas = ordensServico.filter(os => {
-                // Filtra por status se selecionado
-                if (filtroStatus && os.status !== filtroStatus) return false;
-                
-                // Filtra por técnico se selecionado
-                if (filtroTecnico && os.tecnicoId !== filtroTecnico) return false;
-                
-                return true;
-            });
-            
-            // Ordena por data (mais recente primeiro)
-            osFiltradas.sort((a, b) => new Date(b.data) - new Date(a.data));
-            
-            osFiltradas.forEach(os => {
-                const solicitante = solicitantes.find(s => s.id === os.solicitanteId) || {};
-                const tecnico = tecnicos.find(t => t.id === os.tecnicoId) || {};
-                
-                let statusClass = '';
-                if (os.status === 'pendente') statusClass = 'status-pendente';
-                else if (os.status === 'andamento') statusClass = 'status-andamento';
-                else if (os.status === 'concluida') statusClass = 'status-concluida';
-                else if (os.status === 'cancelada') statusClass = 'status-cancelada';
-                
-                const statusText = os.status === 'pendente' ? 'Pendente' :
-                                  os.status === 'andamento' ? 'Em Andamento' :
-                                  os.status === 'concluida' ? 'Concluída' : 'Cancelada';
-                
-                const statusSelect = `
+
+            // Busca OS do Firestore
+            db.collection('ordensServico').orderBy('numero', 'desc').get().then(snapshot => {
+                let osList = [];
+                snapshot.forEach(doc => {
+                    let os = doc.data();
+                    os.id = doc.id;
+                    osList.push(os);
+                });
+
+                // Filtra
+                let osFiltradas = osList.filter(os => {
+                    if (filtroStatus && os.status !== filtroStatus) return false;
+                    if (filtroTecnico && os.tecnicoId !== filtroTecnico) return false;
+                    return true;
+                });
+
+                osFiltradas.forEach(os => {
+                    const solicitante = solicitantes.find(s => s.id === os.solicitanteId) || {};
+                    const tecnico = tecnicos.find(t => t.id === os.tecnicoId) || {};
+
+                    let statusClass = '';
+                    if (os.status === 'pendente') statusClass = 'status-pendente';
+                    else if (os.status === 'andamento') statusClass = 'status-andamento';
+                    else if (os.status === 'concluida') statusClass = 'status-concluida';
+                    else if (os.status === 'cancelada') statusClass = 'status-cancelada';
+
+                    const statusText = os.status === 'pendente' ? 'Pendente' :
+                        os.status === 'andamento' ? 'Em Andamento' :
+                        os.status === 'concluida' ? 'Concluída' : 'Cancelada';
+
+                    const statusSelect = `
 <select class="status-select" data-id="${os.id}">
     <option value="pendente" ${os.status === 'pendente' ? 'selected' : ''}>Pendente</option>
     <option value="andamento" ${os.status === 'andamento' ? 'selected' : ''}>Em Andamento</option>
@@ -1110,56 +1136,53 @@
     <option value="cancelada" ${os.status === 'cancelada' ? 'selected' : ''}>Cancelada</option>
 </select>
 `;
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td>#${os.numero}</td>
-                    <td>${solicitante.nome || 'Solicitante não encontrado'}</td>
-                    <td>${os.setor}</td>
-                    <td>${os.equipamento}</td>
-                    <td>${formatarData(os.data)}</td>
-                    <td class="${statusClass}">${statusSelect}</td>
-                    <td>
-                        <button class="btn-action btn-edit" data-id="${os.id}">Editar</button>
-                        <button class="btn-action btn-view" data-id="${os.id}">Visualizar</button>
-                    </td>
-                `;
-                tbody.appendChild(tr);
-            });
-            
-            // Configura eventos dos botões
-            document.querySelectorAll('.btn-edit').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const osId = this.getAttribute('data-id');
-                    editarOS(osId);
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>#${os.numero}</td>
+                        <td>${solicitante.nome || 'Solicitante não encontrado'}</td>
+                        <td>${os.setor}</td>
+                        <td>${os.equipamento}</td>
+                        <td>${formatarData(os.data)}</td>
+                        <td class="${statusClass}">${statusSelect}</td>
+                        <td>
+                            <button class="btn-action btn-edit" data-id="${os.id}">Editar</button>
+                            <button class="btn-action btn-view" data-id="${os.id}">Visualizar</button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+
+                // Configura eventos dos botões
+                document.querySelectorAll('.btn-edit').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const osId = this.getAttribute('data-id');
+                        editarOS(osId);
+                    });
+                });
+                document.querySelectorAll('.btn-view').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const osId = this.getAttribute('data-id');
+                        abrirOSNovaPagina(osId);
+                    });
+                });
+
+                // Adiciona evento para alteração de status
+                document.querySelectorAll('.status-select').forEach(select => {
+                    select.addEventListener('change', function() {
+                        const osId = this.getAttribute('data-id');
+                        const novaStatus = this.value;
+                        // Atualiza status no Firestore
+                        db.collection('ordensServico').doc(osId).update({
+                            status: novaStatus,
+                            dataConclusao: novaStatus === 'concluida' ? new Date().toISOString().split('T')[0] : null
+                        }).then(() => {
+                            atualizarTabelaOS();
+                            atualizarTabelaHistorico();
+                            atualizarDashboard();
+                        });
+                    });
                 });
             });
-            document.querySelectorAll('.btn-view').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const osId = this.getAttribute('data-id');
-                    abrirOSNovaPagina(osId);
-                });
-            });
-            
-            // Adiciona evento para alteração de status
-    document.querySelectorAll('.status-select').forEach(select => {
-        select.addEventListener('change', function() {
-            const osId = this.getAttribute('data-id');
-            const novaStatus = this.value;
-            const os = ordensServico.find(o => o.id === osId);
-            if (os) {
-                os.status = novaStatus;
-                if (novaStatus === 'concluida') {
-                    os.dataConclusao = new Date().toISOString().split('T')[0];
-                } else {
-                    os.dataConclusao = null;
-                }
-                localStorage.setItem('ordensServico', JSON.stringify(ordensServico));
-                atualizarTabelaOS();
-                atualizarTabelaHistorico();
-                atualizarDashboard();
-            }
-        });
-    });
         }
         
         function atualizarTabelaHistorico() {
