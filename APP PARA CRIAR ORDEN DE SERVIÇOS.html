@@ -389,13 +389,82 @@
                 background: #fff !important;
             }
         }
+
+        /* Estilo para gráficos mais compactos e elegantes */
+        .chart-card {
+            background: #fff;
+            border-radius: 10px;
+            padding: 14px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            min-height: 200px;
+        }
+        .chart-card h3 {
+            margin: 0;
+            color: #00843d;
+            font-size: 1.02em;
+        }
+        .chart-card canvas {
+            width: 100% !important;
+            height: 180px !important;
+            max-height: 260px;
+        }
+
+        /* Mini-charts por técnico */
+        .mini-charts-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 12px;
+            align-items: stretch;
+        }
+        .mini-chart-card {
+            width: 170px;
+            background: #fff;
+            border-radius: 8px;
+            padding: 8px;
+            box-shadow: 0 1px 6px rgba(0,0,0,0.04);
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .mini-chart-card canvas { height: 110px !important; width: 100% !important; }
+        .mini-chart-card .mini-label { font-size: 0.92em; margin-top: 6px; color: #222; font-weight: 600; }
+        .mini-chart-card .mini-sub { font-size: 0.8em; color: #666; margin-top: 2px; }
+
+        /* Ajustes responsivos */
+        @media (max-width: 900px) {
+            .chart-card { min-height: 180px; padding: 12px; }
+            .chart-card canvas { height: 160px !important; }
+            .mini-chart-card { width: calc(50% - 12px); }
+        }
+        @media (max-width: 520px) {
+            .mini-chart-card { width: 100%; }
+        }
     </style>
 </head>
 <body>
-    <div class="main-layout">
+    <div id="login-container" style="display:flex;align-items:center;justify-content:center;min-height:100vh;background:#222;position:fixed;z-index:9999;top:0;left:0;width:100vw;height:100vh;">
+        <form id="loginForm" style="background:#fff;padding:32px 28px 24px 28px;border-radius:12px;box-shadow:0 2px 16px #0003;min-width:320px;max-width:90vw;display:flex;flex-direction:column;gap:18px;">
+            <h2 style="color:#00843d;text-align:center;margin-bottom:8px;">Login</h2>
+            <input type="text" id="login-nome" placeholder="Nome" required style="padding:10px;font-size:1em;border-radius:5px;border:1px solid #ccc;">
+            <div style="display:flex;align-items:center;gap:8px;">
+                <input type="password" id="login-senha" placeholder="Senha" required style="padding:10px;font-size:1em;border-radius:5px;border:1px solid #ccc;flex:1;">
+                <button type="button" id="toggle-login-senha" tabindex="-1" style="background:none;border:none;cursor:pointer;font-size:1.2em;">👁️</button>
+            </div>
+            <input type="tel" id="login-telefone" placeholder="Telefone" required style="padding:10px;font-size:1em;border-radius:5px;border:1px solid #ccc;">
+            <button type="submit" style="background:#39ff14;color:#111;font-weight:bold;font-size:1.1em;padding:12px 0;border:none;border-radius:6px;cursor:pointer;">Entrar</button>
+            <div id="login-erro" style="color:#d00;text-align:center;display:none;"></div>
+        </form>
+    </div>
+    <div class="main-layout" style="display:none;" id="app-main-layout">
         <nav class="sidebar">
             <div class="sidebar-header">
                 ambipar <span class="subtitle">environment</span>
+                <button id="btn-logout" style="position:absolute;right:18px;top:18px;background:#d00;color:#fff;border:none;border-radius:6px;padding:7px 18px;font-weight:bold;cursor:pointer;font-size:1em;z-index:20;">Sair</button>
             </div>
             <div class="sidebar-menu">
                 <button class="sidebar-btn active" data-tab="dashboard">
@@ -421,6 +490,18 @@
                 <button class="sidebar-btn" data-tab="historico-os">
                     <svg viewBox="0 0 24 24"><path d="M13 3a9 9 0 1 0 8.95 10.11h-2.02A7 7 0 1 1 12 5v4l3.89-3.89L12 2v4a9 9 0 0 0 1 17.93V21a7 7 0 1 1 7-7h2a9 9 0 0 0-9-9z"/></svg>
                     Histórico
+                </button>
+                <button class="sidebar-btn" data-tab="maquinas">
+                    <svg viewBox="0 0 24 24"><path d="M12 2a2 2 0 0 0-2 2v1.07A7.001 7.001 0 0 0 5.07 10H4a2 2 0 0 0-2 2v2a2 2 0 0 0 2 2h1.07A7.001 7.001 0 0 0 10 20.93V22a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2v-1.07A7.001 7.001 0 0 0 18.93 14H20a2 2 0 0 0 2-2v-2a2 2 0 0 0-2-2h-1.07A7.001 7.001 0 0 0 14 5.07V4a2 2 0 0 0-2-2h-0z"/></svg>
+                    Máquinas
+                </button>
+                <button class="sidebar-btn" data-tab="pecas">
+                    <svg viewBox="0 0 24 24"><path d="M3 13h8v-6H3v6zm0 8h8v-6H3v6zm10-8h8V5h-8v8zm0 8h8v-6h-8v6z"/></svg>
+                    Peças
+                </button>
+                <button class="sidebar-btn" data-tab="preventivas">
+                    <svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4l-1.5-1.5L12 11 10.5 9.5 9 11zM3 5h6v2H3V5zm0 4h4v2H3V9zM3 13h8v2H3v-2z"/></svg>
+                    Preventivas
                 </button>
                 <button class="sidebar-btn" data-tab="relatorios">
                     <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zM7 10h2v7H7zm4-3h2v10h-2zm4 6h2v4h-2z"/></svg>
@@ -560,21 +641,22 @@
                             <label for="os-setor">Setor:</label>
                             <select id="os-setor" required>
                                 <option value="">Selecione um setor</option>
-                                <option value="Produção">Produção</option>
                                 <option value="Manutenção">Manutenção</option>
-                                <option value="Qualidade">Qualidade</option>
-                                <option value="Logística">Logística</option>
-                                <option value="Administrativo">Administrativo</option>
-                                <option value="Outros">Outros</option>
+                                <option value="Dubom canos">Dubom canos</option>
+                                <option value="Braspol Grãos">Braspol Grãos</option>
+                                <option value="Braspol injeção">Braspol injeção</option>
+                                <option value="Adiministrativo">Adiministrativo</option>
                             </select>
                         </div>
                         <div class="form-group">
-                            <label for="os-equipamento">Equipamento:</label>
-                            <input type="text" id="os-equipamento" required>
+                            <label for="os-maquina">Máquina:</label>
+                            <select id="os-maquina" required>
+                                <option value="">Selecione uma máquina</option>
+                            </select>
                         </div>
                         <div class="form-group">
                             <label for="os-serial">Número de Patrimônio:</label>
-                            <input type="text" id="os-serial">
+                            <input type="text" id="os-serial" readonly>
                         </div>
                         <div class="form-group">
                             <label for="os-tecnico">Técnico Responsável:</label>
@@ -695,26 +777,187 @@
                 </div>
             </div>
             
+            <!-- Máquinas -->
+            <div id="maquinas" class="tabcontent">
+                <div class="os-card">
+                    <h2>Cadastro de Máquinas</h2>
+                    <form id="maquinaForm">
+                        <div class="form-group">
+                            <label for="maquina-nome">Nome:</label>
+                            <input type="text" id="maquina-nome" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="maquina-patrimonio">Patrimônio:</label>
+                            <input type="text" id="maquina-patrimonio">
+                        </div>
+                        <div class="form-group">
+                            <label for="maquina-setor">Setor:</label>
+                            <select id="maquina-setor" required>
+                                <option value="">Selecione um setor</option>
+                                <option value="Manutenção">Manutenção</option>
+                                <option value="Dubom canos">Dubom canos</option>
+                                <option value="Braspol Grãos">Braspol Grãos</option>
+                                <option value="Braspol injeção">Braspol injeção</option>
+                                <option value="Adiministrativo">Adiministrativo</option>
+                            </select>
+                        </div>
+
+                        <!-- Peças utilizadas pela máquina (lista dinâmica) -->
+                        <div class="form-group">
+                            <label for="maquina-peca-input">Peças (adicione uma a uma):</label>
+                            <div style="display:flex;gap:8px;align-items:center;">
+                                <input type="text" id="maquina-peca-input" placeholder="Nome da peça">
+                                <button type="button" id="btn-add-peca" class="btn-action" style="padding:8px 10px;">Adicionar</button>
+                            </div>
+                            <ul id="maquina-pecas-list" style="margin:8px 0 0 0;padding-left:18px;"></ul>
+                        </div>
+
+                        <!-- Itens de preventiva (lista dinâmica) -->
+                        <div class="form-group">
+                            <label for="maquina-preventiva-input">Itens de Preventiva (adicione um a um):</label>
+                            <div style="display:flex;gap:8px;align-items:center;">
+                                <input type="text" id="maquina-preventiva-input" placeholder="Item para verificar">
+                                <button type="button" id="btn-add-preventiva" class="btn-action" style="padding:8px 10px;">Adicionar</button>
+                            </div>
+                            <ul id="maquina-preventiva-list" style="margin:8px 0 0 0;padding-left:18px;"></ul>
+                        </div>
+
+                        <button type="submit">Salvar Máquina</button>
+                    </form>
+                </div>
+                <div class="os-card">
+                    <h3>Máquinas Cadastradas</h3>
+                    <table id="tabela-maquinas">
+                        <thead>
+                            <tr>
+                                <th>Nome</th>
+                                <th>Patrimônio</th>
+                                <th>Setor</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Peças -->
+            <div id="pecas" class="tabcontent">
+                <div class="os-card">
+                    <h2>Peças das Máquinas</h2>
+                    <div style="margin-bottom:12px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                        <label for="pecas-filtro-maquina">Máquina:</label>
+                        <select id="pecas-filtro-maquina"><option value="">Todas</option></select>
+                        <label for="pecas-filtro-setor" style="margin-left:8px;">Setor:</label>
+                        <select id="pecas-filtro-setor"><option value="">Todos</option></select>
+                        <input id="pecas-busca" placeholder="Buscar peça" style="padding:6px;margin-left:8px;min-width:180px;">
+                        <button id="pecas-refresh" class="btn-action" style="margin-left:auto;padding:6px 10px;">Atualizar</button>
+                    </div>
+                    <table id="tabela-pecas">
+                        <thead><tr><th>Máquina</th><th>Setor</th><th>Peça</th><th>Ações</th></tr></thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Preventivas -->
+            <div id="preventivas" class="tabcontent">
+                <div class="os-card">
+                    <h2>Preventivas</h2>
+                    <div style="margin-bottom:12px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;">
+                        <label for="preventivas-setor">Filtrar por Setor:</label>
+                        <select id="preventivas-setor">
+                            <option value="">Todos</option>
+                        </select>
+                        <label style="margin-left:12px;display:flex;align-items:center;gap:6px;"><input type="checkbox" id="preventivas-pendentes-only"> Mostrar apenas pendentes</label>
+                        <input id="preventivas-busca" placeholder="Buscar máquina ou patrimônio" style="padding:6px;margin-left:8px;min-width:180px;">
+                    </div>
+                    <div id="preventivas-list"></div>
+                </div>
+            </div>
+
             <!-- Relatórios -->
             <div id="relatorios" class="tabcontent">
                 <div class="os-card">
                     <h2>Relatórios</h2>
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
-                        <div style="background: #fff; border-radius: 10px; padding: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
-                            <h3 style="margin-top: 0; color: #00843d;">OS por Status</h3>
-                            <canvas id="chart-status" height="200"></canvas>
+                    <div style="display: grid; gap: 12px;">
+                        <div style="display:flex; flex-wrap:wrap; gap:10px; align-items:center;">
+                            <label for="relatorio-periodo">Período:</label>
+                            <select id="relatorio-periodo">
+                                <option value="semanal">Semanal (últimos 7 dias)</option>
+                                <option value="mensal" selected>Mensal (últimos 30 dias)</option>
+                                <option value="anual">Anual (últimos 365 dias)</option>
+                                <option value="personalizado">Personalizado</option>
+                            </select>
+
+                            <label id="label-relatorio-inicio" for="relatorio-inicio" style="display:none;">Início:</label>
+                            <input type="date" id="relatorio-inicio" style="display:none;">
+
+                            <label id="label-relatorio-fim" for="relatorio-fim" style="display:none;">Fim:</label>
+                            <input type="date" id="relatorio-fim" style="display:none;">
+
+                            <button id="btn-gerar-relatorio">Gerar Relatório</button>
+                            <button id="btn-exportar-relatorio" disabled>Exportar CSV</button>
+                            <button id="btn-imprimir-relatorio" disabled>Imprimir</button>
+                            <button id="btn-abrir-relatorio-nova-janela" disabled>Visualizar em Nova Janela</button>
                         </div>
-                        <div style="background: #fff; border-radius: 10px; padding: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
-                            <h3 style="margin-top: 0; color: #00843d;">OS por Técnico</h3>
-                            <canvas id="chart-tecnicos" height="200"></canvas>
+
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px;">
+                            <div class="chart-card" style="padding:12px;">
+                                <h3 style="margin-top: 0; color: #00843d;">OS por Status</h3>
+                                <canvas id="chart-status" height="160"></canvas>
+                            </div>
+                            <div class="chart-card" style="padding:12px;">
+                                <h3 style="margin-top: 0; color: #00843d;">OS por Técnico</h3>
+                                <canvas id="chart-tecnicos" height="160"></canvas>
+                            </div>
+                            <div class="chart-card" style="padding:12px;">
+                                <h3 style="margin-top: 0; color: #00843d;">OS por Setor</h3>
+                                <canvas id="chart-setores" height="160"></canvas>
+                            </div>
+                            <div class="chart-card" style="padding:12px;">
+                                <h3 style="margin-top: 0; color: #00843d;">OS por Máquina (top 10)</h3>
+                                <canvas id="chart-maquinas" height="160"></canvas>
+                            </div>
                         </div>
-                        <div style="background: #fff; border-radius: 10px; padding: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
-                            <h3 style="margin-top: 0; color: #00843d;">OS por Setor</h3>
-                            <canvas id="chart-setores" height="200"></canvas>
+
+                        <div id="mini-charts-per-tecnico" class="mini-charts-container" style="margin-top:10px;"></div>
+
+                        <div style="margin-top:12px; background:#fff; border-radius:10px; padding:12px; box-shadow: 0 1px 6px rgba(0,0,0,0.05);">
+                            <h3 style="margin-top:0;color:#00843d;">Resumo por Técnico</h3>
+                            <div style="display:flex; gap:8px; align-items:center; margin-bottom:8px;">
+                                <button id="btn-exportar-tecnicos" disabled>Exportar Técnicos CSV</button>
+                            </div>
+                            <table id="tabela-tecnicos-resumo">
+                                <thead>
+                                    <tr>
+                                        <th>Técnico</th>
+                                        <th>Pendentes</th>
+                                        <th>Concluídas</th>
+                                        <th>Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
                         </div>
-                    </div>
-                    <div style="margin-top: 30px;">
-                        <button onclick="gerarRelatorioCompleto()">Gerar Relatório Completo</button>
+
+                        <div style="margin-top: 12px; background:#fff; border-radius:10px; padding:12px; box-shadow: 0 1px 6px rgba(0,0,0,0.05);">
+                            <div id="relatorio-summary"></div>
+                            <table id="tabela-relatorio">
+                                <thead>
+                                    <tr>
+                                        <th>Número</th>
+                                        <th>Solicitante</th>
+                                        <th>Setor</th>
+                                        <th>Equipamento</th>
+                                        <th>Data</th>
+                                        <th>Status</th>
+                                        <th>Técnico</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -734,41 +977,451 @@
         </div>
     </div>
 
+    <!-- Firebase App (core) -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<!-- Firestore Database -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
     <script>
+    // Função de login simples
+    let usuarioLogado = null;
+    function mostrarApp() {
+        document.getElementById('login-container').style.display = 'none';
+        document.getElementById('app-main-layout').style.display = 'flex';
+    }
+    function esconderApp() {
+        document.getElementById('login-container').style.display = 'flex';
+        document.getElementById('app-main-layout').style.display = 'none';
+    }
+    document.addEventListener('DOMContentLoaded', function() {
+        esconderApp();
+        const loginForm = document.getElementById('loginForm');
+        // Botão de logout
+        setTimeout(() => {
+            const btnLogout = document.getElementById('btn-logout');
+            if (btnLogout) {
+                btnLogout.onclick = function() {
+                    usuarioLogado = null;
+                    esconderApp();
+                    // Limpa campos do login
+                    document.getElementById('login-nome').value = '';
+                    document.getElementById('login-senha').value = '';
+                    document.getElementById('login-telefone').value = '';
+                };
+            }
+        }, 400);
+        // Visualizar senha login
+        setTimeout(() => {
+            const btnToggle = document.getElementById('toggle-login-senha');
+            if (btnToggle) {
+                btnToggle.onclick = function() {
+                    const senhaInput = document.getElementById('login-senha');
+                    if (senhaInput.type === 'password') {
+                        senhaInput.type = 'text';
+                        this.textContent = '🙈';
+                    } else {
+                        senhaInput.type = 'password';
+                        this.textContent = '👁️';
+                    }
+                };
+            }
+        }, 200);
+        // Defina aqui o usuário administrador (altere conforme desejar)
+        const ADMIN_NOME = 'Danielson';
+        const ADMIN_SENHA = 'Dani8564';
+        const ADMIN_TELEFONE = '88996116544'; // coloque seu telefone
+
+        // Exibe o formulário de cadastro de usuário (apenas para admin)
+        function mostrarCadastroUsuario() {
+            let modal = document.getElementById('modal-cadastro-usuario');
+            if (!modal) {
+                modal = document.createElement('div');
+                modal.id = 'modal-cadastro-usuario';
+                modal.style = 'position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.5);z-index:2000;display:flex;align-items:center;justify-content:center;';
+                modal.innerHTML = `
+                <form id="form-cadastro-usuario" style="background:#fff;padding:32px 28px 24px 28px;border-radius:12px;box-shadow:0 2px 16px #0003;min-width:320px;max-width:90vw;display:flex;flex-direction:column;gap:18px;">
+                    <h2 style="color:#00843d;text-align:center;margin-bottom:8px;">Cadastrar Novo Usuário</h2>
+                    <input type="text" id="novo-nome" placeholder="Nome" required style="padding:10px;font-size:1em;border-radius:5px;border:1px solid #ccc;">
+                    <input type="password" id="novo-senha" placeholder="Senha" required style="padding:10px;font-size:1em;border-radius:5px;border:1px solid #ccc;">
+                    <input type="tel" id="novo-telefone" placeholder="Telefone" required style="padding:10px;font-size:1em;border-radius:5px;border:1px solid #ccc;">
+                    <select id="novo-tipo" required style="padding:10px;font-size:1em;border-radius:5px;border:1px solid #ccc;">
+                        <option value="">Selecione o tipo</option>
+                        <option value="manutencao">Manutenção</option>
+                        <option value="producao">Produção</option>
+                    </select>
+                    <button type="submit" style="background:#39ff14;color:#111;font-weight:bold;font-size:1.1em;padding:12px 0;border:none;border-radius:6px;cursor:pointer;">Cadastrar</button>
+                    <button type="button" id="fechar-cadastro-usuario" style="background:#d00;color:#fff;font-weight:bold;font-size:1.1em;padding:12px 0;border:none;border-radius:6px;cursor:pointer;margin-top:8px;">Fechar</button>
+                    <div id="cadastro-usuario-erro" style="color:#d00;text-align:center;display:none;"></div>
+                </form>`;
+                document.body.appendChild(modal);
+            } else {
+                modal.style.display = 'flex';
+            }
+            document.getElementById('fechar-cadastro-usuario').onclick = function() {
+                modal.style.display = 'none';
+            };
+            document.getElementById('form-cadastro-usuario').onsubmit = function(e) {
+                e.preventDefault();
+                // Normalização igual ao login
+                let nome = document.getElementById('novo-nome').value.trim().toLowerCase().replace(/\s+/g, ' ');
+                let senha = document.getElementById('novo-senha').value.trim();
+                let telefone = document.getElementById('novo-telefone').value.replace(/\D/g, '');
+                const tipo = document.getElementById('novo-tipo').value;
+                const erroDiv = document.getElementById('cadastro-usuario-erro');
+                erroDiv.style.display = 'none';
+                if (!nome || !senha || !telefone || !tipo) {
+                    erroDiv.textContent = 'Preencha todos os campos.';
+                    erroDiv.style.display = 'block';
+                    return;
+                }
+                // Verifica se já existe (normalizado)
+                db.collection('usuarios').where('nome','==',nome).where('telefone','==',telefone).get().then(snapshot => {
+                    if (!snapshot.empty) {
+                        erroDiv.textContent = 'Usuário já existe.';
+                        erroDiv.style.display = 'block';
+                        return;
+                    }
+                    db.collection('usuarios').add({nome,senha,telefone,tipo, criadoEm: new Date().toISOString()}).then(() => {
+                        alert('Usuário cadastrado com sucesso!');
+                        modal.style.display = 'none';
+                    });
+                });
+            };
+        }
+
+        loginForm.onsubmit = function(e) {
+            e.preventDefault();
+            const nome = document.getElementById('login-nome').value.trim();
+            const senha = document.getElementById('login-senha').value.trim();
+            const telefone = document.getElementById('login-telefone').value.trim();
+            const erroDiv = document.getElementById('login-erro');
+            erroDiv.style.display = 'none';
+            if (!nome || !senha || !telefone) {
+                erroDiv.textContent = 'Preencha todos os campos.';
+                erroDiv.style.display = 'block';
+                return;
+            }
+            // ADMIN login
+            if (nome === ADMIN_NOME && senha === ADMIN_SENHA && telefone === ADMIN_TELEFONE) {
+                usuarioLogado = {id: 'admin', nome: ADMIN_NOME, telefone: ADMIN_TELEFONE, admin: true};
+                mostrarApp();
+                registrarAcesso(usuarioLogado);
+                // Adiciona botão de cadastro de usuário no menu (se não existir)
+                setTimeout(() => {
+                    if (!document.getElementById('btn-cadastrar-usuario')) {
+                        const nav = document.querySelector('.sidebar-menu');
+                        const btn = document.createElement('button');
+                        btn.id = 'btn-cadastrar-usuario';
+                        btn.className = 'sidebar-btn';
+                        btn.innerHTML = '<svg viewBox="0 0 24 24" style="width:22px;height:22px;"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg> Cadastrar Usuário';
+                        btn.onclick = mostrarCadastroUsuario;
+                        nav.appendChild(btn);
+                    }
+                    // Botão para ver usuários cadastrados (apenas admin)
+                    if (!document.getElementById('btn-listar-usuarios')) {
+                        const nav = document.querySelector('.sidebar-menu');
+                        const btn = document.createElement('button');
+                        btn.id = 'btn-listar-usuarios';
+                        btn.className = 'sidebar-btn';
+                        btn.innerHTML = '<svg viewBox="0 0 24 24" style="width:22px;height:22px;"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5s-3 1.34-3 3 1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5C15 14.17 10.33 13 8 13zm8 0c-.29 0-.62.02-.97.05C15.64 13.36 17 14.28 17 15.5V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg> Usuários Cadastrados';
+                        btn.onclick = mostrarListaUsuarios;
+                        nav.appendChild(btn);
+                    }
+                }, 500);
+                return;
+            }
+        // Função para mostrar lista de usuários cadastrados (apenas admin)
+        function mostrarListaUsuarios() {
+            // Cria modal
+            let modal = document.getElementById('modal-lista-usuarios');
+            if (!modal) {
+                modal = document.createElement('div');
+                modal.id = 'modal-lista-usuarios';
+                modal.style = 'position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.5);z-index:3000;display:flex;align-items:center;justify-content:center;';
+                modal.innerHTML = `
+                    <div style="background:#fff;padding:32px 28px 24px 28px;border-radius:12px;box-shadow:0 2px 16px #0003;min-width:320px;max-width:95vw;max-height:90vh;overflow:auto;display:flex;flex-direction:column;gap:18px;">
+                        <h2 style="color:#00843d;text-align:center;margin-bottom:8px;">Usuários Cadastrados</h2>
+                        <table style="width:100%;border-collapse:collapse;">
+                            <thead><tr><th>Nome</th><th>Telefone</th><th>Ações</th></tr></thead>
+                            <tbody id="usuarios-lista-tbody"></tbody>
+                        </table>
+                        <button type="button" id="fechar-lista-usuarios" style="background:#d00;color:#fff;font-weight:bold;font-size:1.1em;padding:12px 0;border:none;border-radius:6px;cursor:pointer;margin-top:8px;">Fechar</button>
+                    </div>
+                `;
+                document.body.appendChild(modal);
+            } else {
+                modal.style.display = 'flex';
+            }
+            document.getElementById('fechar-lista-usuarios').onclick = function() {
+                modal.style.display = 'none';
+            };
+            // Busca usuários do Firestore
+            db.collection('usuarios').get().then(snapshot => {
+                const tbody = document.getElementById('usuarios-lista-tbody');
+                tbody.innerHTML = '';
+                snapshot.forEach(doc => {
+                    const user = doc.data();
+                    const tr = document.createElement('tr');
+                    // Botões de ação (editar e apagar, não permite apagar admin)
+                    let btnDelete = '';
+                    let btnEdit = '';
+                    if (user.nome !== ADMIN_NOME || user.telefone !== ADMIN_TELEFONE) {
+                        btnDelete = `<button class='btn-delete' style='padding:6px 12px;border:none;border-radius:4px;cursor:pointer;font-weight:bold;background:#d00;color:#fff;margin-left:4px;' data-id='${doc.id}'>Apagar</button>`;
+                        btnEdit = `<button class='btn-edit' style='padding:6px 12px;border:none;border-radius:4px;cursor:pointer;font-weight:bold;background:#00843d;color:#fff;' data-id='${doc.id}' data-nome='${user.nome}' data-telefone='${user.telefone}' data-tipo='${user.tipo || ''}' data-senha='${user.senha || ''}'>Editar</button>`;
+                    } else {
+                        btnDelete = `<span style='color:#888;font-size:0.95em;'>Admin</span>`;
+                    }
+                    tr.innerHTML = `<td>${user.nome}</td><td>${user.telefone}</td><td>${btnEdit}${btnDelete}</td>`;
+                    tbody.appendChild(tr);
+                });
+                // Adiciona evento aos botões de apagar
+                tbody.querySelectorAll('.btn-delete').forEach(btn => {
+                    btn.onclick = function() {
+                        if (confirm('Tem certeza que deseja apagar este usuário?')) {
+                            const userId = this.getAttribute('data-id');
+                            db.collection('usuarios').doc(userId).delete().then(() => {
+                                this.closest('tr').remove();
+                            }).catch(err => {
+                                alert('Erro ao apagar usuário: ' + err.message);
+                            });
+                        }
+                    };
+                });
+                // Adiciona evento aos botões de editar
+                tbody.querySelectorAll('.btn-edit').forEach(btn => {
+                    btn.onclick = function() {
+                        const userId = this.getAttribute('data-id');
+                        const nomeAtual = this.getAttribute('data-nome');
+                        const telefoneAtual = this.getAttribute('data-telefone');
+                        const tipoAtual = this.getAttribute('data-tipo') || '';
+                        const senhaAtual = this.getAttribute('data-senha') || '';
+                        // Cria modal de edição
+                        let modalEdit = document.getElementById('modal-editar-usuario');
+                        if (!modalEdit) {
+                            modalEdit = document.createElement('div');
+                            modalEdit.id = 'modal-editar-usuario';
+                            modalEdit.style = 'position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.5);z-index:4000;display:flex;align-items:center;justify-content:center;';
+                            modalEdit.innerHTML = `
+                                <form id="form-editar-usuario" style="background:#fff;padding:32px 28px 24px 28px;border-radius:12px;box-shadow:0 2px 16px #0003;min-width:320px;max-width:90vw;display:flex;flex-direction:column;gap:18px;">
+                                    <h2 style=\"color:#00843d;text-align:center;margin-bottom:8px;\">Editar Usuário</h2>
+                                    <input type="text" id="edit-nome" placeholder="Nome" required style="padding:10px;font-size:1em;border-radius:5px;border:1px solid #ccc;">
+                                    <input type="tel" id="edit-telefone" placeholder="Telefone" required style="padding:10px;font-size:1em;border-radius:5px;border:1px solid #ccc;">
+                                    <select id="edit-tipo" required style="padding:10px;font-size:1em;border-radius:5px;border:1px solid #ccc;">
+                                        <option value="">Selecione o tipo</option>
+                                        <option value="manutencao">Manutenção</option>
+                                        <option value="producao">Produção</option>
+                                    </select>
+                                    <div style='display:flex;align-items:center;gap:8px;'>
+                                        <input type="password" id="edit-senha" placeholder="Senha" required style="padding:10px;font-size:1em;border-radius:5px;border:1px solid #ccc;flex:1;">
+                                        <button type="button" id="toggle-senha" tabindex="-1" style="background:none;border:none;cursor:pointer;font-size:1.2em;">👁️</button>
+                                    </div>
+                                    <button type="submit" style="background:#39ff14;color:#111;font-weight:bold;font-size:1.1em;padding:12px 0;border:none;border-radius:6px;cursor:pointer;">Salvar Alterações</button>
+                                    <button type="button" id="fechar-editar-usuario" style="background:#d00;color:#fff;font-weight:bold;font-size:1.1em;padding:12px 0;border:none;border-radius:6px;cursor:pointer;margin-top:8px;">Fechar</button>
+                                    <div id="editar-usuario-erro" style="color:#d00;text-align:center;display:none;"></div>
+                                </form>`;
+                            document.body.appendChild(modalEdit);
+                        } else {
+                            modalEdit.style.display = 'flex';
+                        }
+                        // Preenche campos
+                        document.getElementById('edit-nome').value = nomeAtual;
+                        document.getElementById('edit-telefone').value = telefoneAtual;
+                        document.getElementById('edit-tipo').value = tipoAtual;
+                        document.getElementById('edit-senha').value = senhaAtual;
+                        // Mostrar/ocultar senha
+                        document.getElementById('toggle-senha').onclick = function() {
+                            const senhaInput = document.getElementById('edit-senha');
+                            if (senhaInput.type === 'password') {
+                                senhaInput.type = 'text';
+                                this.textContent = '🙈';
+                            } else {
+                                senhaInput.type = 'password';
+                                this.textContent = '👁️';
+                            }
+                        };
+                        // Fechar modal
+                        document.getElementById('fechar-editar-usuario').onclick = function() {
+                            modalEdit.style.display = 'none';
+                        };
+                        // Submeter edição
+                        document.getElementById('form-editar-usuario').onsubmit = function(e) {
+                            e.preventDefault();
+                            const novoNome = document.getElementById('edit-nome').value.trim();
+                            const novoTelefone = document.getElementById('edit-telefone').value.trim();
+                            const novoTipo = document.getElementById('edit-tipo').value;
+                            const novaSenha = document.getElementById('edit-senha').value;
+                            const erroDiv = document.getElementById('editar-usuario-erro');
+                            erroDiv.style.display = 'none';
+                            if (!novoNome || !novoTelefone || !novoTipo || !novaSenha) {
+                                erroDiv.textContent = 'Preencha todos os campos.';
+                                erroDiv.style.display = 'block';
+                                return;
+                            }
+                            // Atualiza no Firestore
+                            db.collection('usuarios').doc(userId).update({nome: novoNome, telefone: novoTelefone, tipo: novoTipo, senha: novaSenha}).then(() => {
+                                alert('Usuário atualizado com sucesso!');
+                                modalEdit.style.display = 'none';
+                                mostrarListaUsuarios();
+                            }).catch(err => {
+                                erroDiv.textContent = 'Erro ao atualizar usuário: ' + err.message;
+                                erroDiv.style.display = 'block';
+                            });
+                        };
+                    };
+                });
+            });
+        }
+            // Busca usuário no Firestore (apenas login, sem auto-registro)
+            db.collection('usuarios').where('nome','==',nome).where('telefone','==',telefone).get().then(snapshot => {
+                if (snapshot.empty) {
+                    erroDiv.textContent = 'Usuário não encontrado. Solicite cadastro ao administrador.';
+                    erroDiv.style.display = 'block';
+                    return;
+                }
+                let achou = false;
+                snapshot.forEach(doc => {
+                    const user = doc.data();
+                    if (user.senha === senha) {
+                        usuarioLogado = {id: doc.id, nome: user.nome, telefone: user.telefone, admin: false};
+                        achou = true;
+                        registrarAcesso(usuarioLogado);
+                        mostrarApp();
+                    }
+                });
+                if (!achou) {
+                    erroDiv.textContent = 'Senha incorreta.';
+                    erroDiv.style.display = 'block';
+                }
+            }).catch(() => {
+                erroDiv.textContent = 'Erro ao acessar o banco de dados.';
+                erroDiv.style.display = 'block';
+            });
+        };
+        function registrarAcesso(usuario) {
+            db.collection('acessos').add({usuarioId: usuario.id, nome: usuario.nome, telefone: usuario.telefone, dataHora: new Date().toISOString()});
+        }
+    });
+        // Configuração do Firebase
+const firebaseConfig = {
+  apiKey: "AIzaSyD4FH7GjivSwsnhqCGvYdYd6AYpLrulGRQ",
+  authDomain: "ordens-servico-37369.firebaseapp.com",
+  projectId: "ordens-servico-37369",
+  storageBucket: "ordens-servico-37369.firebasestorage.app",
+  messagingSenderId: "956106820939",
+  appId: "1:956106820939:web:fb5df0102c23c506036cce",
+  measurementId: "G-15FMG1E6BM"
+};
+
+// Inicializa o Firebase
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
         // Banco de dados local
         let solicitantes = JSON.parse(localStorage.getItem('solicitantes')) || [];
         let tecnicos = JSON.parse(localStorage.getItem('tecnicos')) || [];
+        let maquinas = JSON.parse(localStorage.getItem('maquinas')) || [];
         let ordensServico = JSON.parse(localStorage.getItem('ordensServico')) || [];
         let ultimoNumeroOS = parseInt(localStorage.getItem('ultimoNumeroOS')) || 0;
 
         // Inicialização do sistema
-        document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function() {
+    // Função para carregar solicitantes do Firestore
+    function carregarSolicitantesFirestore(callback) {
+        db.collection('solicitantes').get().then(snapshot => {
+            solicitantes = [];
+            snapshot.forEach(doc => {
+                let s = doc.data();
+                s.id = s.id || doc.id;
+                solicitantes.push(s);
+            });
+            if (callback) callback();
+        });
+    }
+    // Função para carregar técnicos do Firestore
+    function carregarTecnicosFirestore(callback) {
+        db.collection('tecnicos').get().then(snapshot => {
+            tecnicos = [];
+            snapshot.forEach(doc => {
+                let t = doc.data();
+                t.id = t.id || doc.id;
+                tecnicos.push(t);
+            });
+            if (callback) callback();
+        });
+    }
+
+    function carregarMaquinasFirestore(callback) {
+        db.collection('maquinas').get().then(snapshot => {
+            maquinas = [];
+            snapshot.forEach(doc => {
+                let m = doc.data();
+                m.id = m.id || doc.id;
+                maquinas.push(m);
+            });
+            localStorage.setItem('maquinas', JSON.stringify(maquinas));
+            if (callback) callback();
+        }).catch(err => {
+            console.warn('Não foi possível carregar máquinas do Firestore:', err);
+            if (callback) callback();
+        });
+    }
+
+    // Carrega dados do Firestore e só depois inicializa interface
+    carregarSolicitantesFirestore(function() {
+        carregarTecnicosFirestore(function() {
             // Configura navegação entre abas
             const sidebarBtns = document.querySelectorAll('.sidebar-btn');
             const tabContents = document.querySelectorAll('.tabcontent');
-            
             sidebarBtns.forEach(btn => {
                 btn.addEventListener('click', function() {
-                    // Remove 'active' de todos os botões e abas
                     sidebarBtns.forEach(b => b.classList.remove('active'));
                     tabContents.forEach(tab => tab.classList.remove('active'));
-                    
-                    // Adiciona 'active' ao botão clicado e à aba correspondente
                     this.classList.add('active');
                     const tabId = this.getAttribute('data-tab');
                     const tab = document.getElementById(tabId);
                     if (tab) tab.classList.add('active');
-                    
                     // Atualiza dados específicos da aba quando aberta
                     if (tabId === 'dashboard') atualizarDashboard();
-                    if (tabId === 'solicitantes') atualizarTabelaSolicitantes();
-                    if (tabId === 'tecnicos') atualizarTabelaTecnicos();
-                    if (tabId === 'gerenciar-os') atualizarTabelaOS();
+                    if (tabId === 'solicitantes') {
+                        carregarSolicitantesFirestore(function() {
+                            atualizarTabelaSolicitantes();
+                            atualizarSelectSolicitantes();
+                        });
+                    }
+                    if (tabId === 'tecnicos') {
+                        carregarTecnicosFirestore(function() {
+                            atualizarTabelaTecnicos();
+                            atualizarSelectTecnicos();
+                            atualizarSelectFiltroTecnicos();
+                        });
+                    }
+                    if (tabId === 'gerenciar-os') {
+                        db.collection('ordensServico').orderBy('numero', 'desc').get().then(snapshot => {
+                            ordensServico = [];
+                            snapshot.forEach(doc => {
+                                let os = doc.data();
+                                os.id = doc.id;
+                                ordensServico.push(os);
+                            });
+                            atualizarTabelaOS();
+                        });
+                    }
                     if (tabId === 'historico-os') atualizarTabelaHistorico();
-                    if (tabId === 'relatorios') atualizarRelatorios();
+                    if (tabId === 'pecas') {
+                        // Atualiza lista de máquinas antes de exibir peças (quando possível)
+                        if (typeof db !== 'undefined') {
+                            carregarMaquinasFirestore(function() { atualizarSelectMaquinas(); atualizarTabPecas(); });
+                        } else { atualizarSelectMaquinas(); atualizarTabPecas(); }
+                    }
+                    if (tabId === 'preventivas') { atualizarSelectPreventivasSetor(); renderPreventivas(); }
+                    if (tabId === 'relatorios') {
+                        atualizarRelatorios();
+                        setTimeout(function() {
+                            try { if (chartStatusObj) chartStatusObj.resize(); if (chartTecnicosObj) chartTecnicosObj.resize(); if (chartSetoresObj) chartSetoresObj.resize(); if (chartMaquinasObj) chartMaquinasObj.resize(); if (chartPorTecnicoObjs && chartPorTecnicoObjs.length) chartPorTecnicoObjs.forEach(c=>c.resize()); } catch(e) {}
+                        }, 300);
+                    }
                 });
             });
-            
             // Garante que a primeira aba esteja ativa ao carregar
             const btnAtivo = document.querySelector('.sidebar-btn.active');
             if (btnAtivo) {
@@ -776,27 +1429,35 @@
                 const tab = document.getElementById(tabId);
                 if (tab) tab.classList.add('active');
             }
-            
             // Inicializa selects
             atualizarSelectSolicitantes();
             atualizarSelectTecnicos();
             atualizarSelectFiltroTecnicos();
-            
             // Configura formulários
             configurarFormularios();
-            
+
+            // Inicializa filtros e listeners da aba Preventivas
+            atualizarSelectPreventivasSetor();
+            const selPrev = document.getElementById('preventivas-setor');
+            const chkPrev = document.getElementById('preventivas-pendentes-only');
+            const buscaPrev = document.getElementById('preventivas-busca');
+            if (selPrev) selPrev.addEventListener('change', renderPreventivas);
+            if (chkPrev) chkPrev.addEventListener('change', renderPreventivas);
+            if (buscaPrev) buscaPrev.addEventListener('input', renderPreventivas);
+
             // Atualiza dashboard
             atualizarDashboard();
-            
             // Atualiza tabelas
             atualizarTabelaSolicitantes();
             atualizarTabelaTecnicos();
             atualizarTabelaOS();
             atualizarTabelaHistorico();
-            
+            configurarRelatorios();
             // Configura data atual no formulário de OS
             document.getElementById('os-data').valueAsDate = new Date();
         });
+    });
+});
 
         // Funções para atualizar selects
         function atualizarSelectSolicitantes() {
@@ -825,6 +1486,122 @@
             });
         }
         
+        function atualizarSelectMaquinas() {
+            const select = document.getElementById('os-maquina');
+            if (!select) return;
+
+            const previousValue = select.value || '';
+            select.innerHTML = '<option value="">Selecione uma máquina</option>';
+            maquinas.forEach(maquina => {
+                const option = document.createElement('option');
+                option.value = maquina.id;
+                option.textContent = `${maquina.nome} ${maquina.patrimonio ? '- ' + maquina.patrimonio : ''} (${maquina.setor})`;
+                select.appendChild(option);
+            });
+
+            // Restaura seleção anterior se possível e atualiza patrimônio automáticamente
+            if (previousValue) {
+                select.value = previousValue;
+            }
+
+            // Se houver uma máquina selecionada, atualiza o campo de patrimônio
+            const selectedId = select.value;
+            const serialInput = document.getElementById('os-serial');
+            if (selectedId && serialInput) {
+                const maquina = maquinas.find(m => m.id === selectedId);
+                serialInput.value = maquina ? (maquina.patrimonio || '') : '';
+            } else if (serialInput) {
+                // se não estiver selecionado, limpa o campo de patrimônio
+                serialInput.value = '';
+            }
+
+            // Dispara evento change para garantir que listeners reajam
+            select.dispatchEvent(new Event('change'));
+        }
+
+        function atualizarTabelaMaquinas() {
+            const tbody = document.querySelector('#tabela-maquinas tbody');
+            if (!tbody) return;
+            
+            tbody.innerHTML = '';
+            
+            maquinas.forEach(maquina => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${maquina.nome}</td>
+                    <td>${maquina.patrimonio || ''}</td>
+                    <td>${maquina.setor}</td>
+                    <td>
+                        <button class="btn-action btn-view" data-id="${maquina.id}">Ver</button>
+                        <button class="btn-action btn-edit" data-id="${maquina.id}">Editar</button>
+                        <button class="btn-action btn-delete" data-id="${maquina.id}">Remover</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            // Eventos
+            document.querySelectorAll('#tabela-maquinas .btn-view').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    visualizarMaquina(this.getAttribute('data-id'));
+                });
+            });
+            document.querySelectorAll('#tabela-maquinas .btn-edit').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    editarMaquina(this.getAttribute('data-id'));
+                });
+            });
+            document.querySelectorAll('#tabela-maquinas .btn-delete').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const id = this.getAttribute('data-id');
+                    if (confirm('Tem certeza que deseja remover esta máquina?')) {
+                        maquinas = maquinas.filter(m => m.id !== id);
+                        localStorage.setItem('maquinas', JSON.stringify(maquinas));
+                        // tenta apagar do firestore também
+                        if (typeof db !== 'undefined') {
+                            db.collection('maquinas').doc(id).delete().catch(()=>{});
+                        }
+                        atualizarTabelaMaquinas();
+                        atualizarSelectMaquinas();
+                        // Atualiza também a aba Preventivas
+                        if (typeof atualizarSelectPreventivasSetor === 'function') atualizarSelectPreventivasSetor();
+                        if (typeof renderPreventivas === 'function') renderPreventivas();
+                    }
+                });
+            });
+        }
+
+        function editarMaquina(maquinaId) {
+            const maquina = maquinas.find(m => m.id === maquinaId);
+            if (!maquina) return;
+
+            const novoNome = prompt('Nome:', maquina.nome);
+            if (novoNome === null) return;
+            const novoPatrimonio = prompt('Patrimônio:', maquina.patrimonio || '');
+            if (novoPatrimonio === null) return;
+            const novoSetor = prompt('Setor:', maquina.setor || '');
+            if (novoSetor === null) return;
+
+            // Permite editar listas como CSV (apenas se o usuário quiser)
+            const pecasStr = prompt('Peças (separe por vírgula):', (maquina.pecas || []).join(', '));
+            if (pecasStr !== null) maquina.pecas = pecasStr.split(',').map(s=>s.trim()).filter(Boolean);
+            const prevStr = prompt('Itens de preventiva (separe por vírgula):', (maquina.preventiva || []).join(', '));
+            if (prevStr !== null) maquina.preventiva = prevStr.split(',').map(s=>s.trim()).filter(Boolean);
+
+            maquina.nome = novoNome.trim();
+            maquina.patrimonio = novoPatrimonio.trim();
+            maquina.setor = novoSetor.trim();
+
+            localStorage.setItem('maquinas', JSON.stringify(maquinas));
+            // atualiza no firestore se possível
+            if (typeof db !== 'undefined') {
+                db.collection('maquinas').doc(maquina.id).set(Object.assign({}, maquina)).catch(()=>{});
+            }
+
+            atualizarTabelaMaquinas();
+            atualizarSelectMaquinas();
+        }
+        
         function atualizarSelectFiltroTecnicos() {
             const select = document.getElementById('filtro-tecnico');
             if (!select) return;
@@ -838,6 +1615,390 @@
             });
         }
 
+        // Visualiza detalhes de máquina (peças / preventiva)
+        function visualizarMaquina(maquinaId) {
+            const maquina = maquinas.find(m => m.id === maquinaId);
+            if (!maquina) return;
+            let modal = document.getElementById('modal-visualizar-maquina');
+            if (!modal) {
+                modal = document.createElement('div');
+                modal.id = 'modal-visualizar-maquina';
+                modal.style = 'position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.5);z-index:2500;display:flex;align-items:center;justify-content:center;';
+                modal.innerHTML = `
+                    <div style="background:#fff;padding:24px;border-radius:10px;max-width:720px;width:95%;box-shadow:0 2px 16px rgba(0,0,0,0.2);">
+                        <h2 style="color:#00843d;margin-top:0;">Detalhes da Máquina</h2>
+                        <div id="modal-maquina-content"></div>
+                        <div style="text-align:right;margin-top:12px;"><button id="fechar-visualizar-maquina" style="background:#d00;color:#fff;border:none;padding:10px 14px;border-radius:6px;cursor:pointer;font-weight:bold;">Fechar</button></div>
+                    </div>`;
+                document.body.appendChild(modal);
+                document.getElementById('fechar-visualizar-maquina').onclick = function() { modal.style.display = 'none'; };
+            } else {
+                modal.style.display = 'flex';
+            }
+            const content = document.getElementById('modal-maquina-content');
+            const pecasHtml = (maquina.pecas && maquina.pecas.length) ? `<ul>${maquina.pecas.map(p => '<li>'+p+'</li>').join('')}</ul>` : '<p>Nenhuma peça cadastrada.</p>';
+            const prevHtml = (maquina.preventiva && maquina.preventiva.length) ? `<ul>${maquina.preventiva.map(p => '<li>'+p+'</li>').join('')}</ul>` : '<p>Nenhum item de preventiva cadastrado.</p>';
+            content.innerHTML = `
+                <p><strong>Nome:</strong> ${maquina.nome}</p>
+                <p><strong>Patrimônio:</strong> ${maquina.patrimonio || '—'}</p>
+                <p><strong>Setor:</strong> ${maquina.setor || '—'}</p>
+                <h3 style="color:#00843d;margin-bottom:6px;">Peças</h3>
+                ${pecasHtml}
+                <h3 style="color:#00843d;margin-bottom:6px;">Itens de Preventiva</h3>
+                ${prevHtml}
+            `;
+        }
+
+        // Funções para a aba Preventivas
+        function atualizarSelectPreventivasSetor() {
+            const select = document.getElementById('preventivas-setor');
+            if (!select) return;
+            select.innerHTML = '<option value="">Todos</option>';
+            const setores = Array.from(new Set(maquinas.map(m => m.setor).filter(s => s && s.toString().trim() !== ''))).sort();
+            setores.forEach(s => {
+                const option = document.createElement('option');
+                option.value = s;
+                option.textContent = s;
+                select.appendChild(option);
+            });
+        }
+
+        function renderPreventivas() {
+            const container = document.getElementById('preventivas-list');
+            if (!container) return;
+            const setorFilter = document.getElementById('preventivas-setor') ? document.getElementById('preventivas-setor').value : '';
+            const pendentesOnly = document.getElementById('preventivas-pendentes-only') ? document.getElementById('preventivas-pendentes-only').checked : false;
+            const busca = document.getElementById('preventivas-busca') ? document.getElementById('preventivas-busca').value.toLowerCase() : '';
+            container.innerHTML = '';
+
+            const maquinasFiltradas = maquinas.filter(m => {
+                if (setorFilter && m.setor !== setorFilter) return false;
+                if (busca && !( (m.nome||'').toLowerCase().includes(busca) || (m.patrimonio||'').toLowerCase().includes(busca) )) return false;
+                if (pendentesOnly) {
+                    const hasPending = (m.preventiva || []).some((item, idx) => {
+                        const st = m.preventivaStatus && typeof m.preventivaStatus[idx] !== 'undefined' ? m.preventivaStatus[idx] : false;
+                        return !st;
+                    });
+                    if (!hasPending) return false;
+                }
+                return true;
+            });
+
+            if (maquinasFiltradas.length === 0) { container.innerHTML = '<p>Nenhuma máquina encontrada.</p>'; return; }
+
+            maquinasFiltradas.forEach(m => {
+                const bloco = document.createElement('div');
+                bloco.style = 'background:#fff;border-radius:8px;padding:12px;margin-bottom:10px;box-shadow:0 1px 6px rgba(0,0,0,0.04);';
+                const header = document.createElement('div');
+                header.innerHTML = `<strong>${m.nome}</strong> <span style="color:#666;margin-left:8px">${m.patrimonio || ''}${m.setor ? ' - ' + m.setor : ''}</span> <button class="btn-action btn-open-preventiva" data-id="${m.id}" style="margin-left:12px;padding:6px 10px;">Visualizar</button>`;
+                bloco.appendChild(header);
+                // Resumo compacto (não exibe os itens)
+                const total = (m.preventiva || []).length;
+                const pendentes = (m.preventiva || []).reduce((acc, itm, idx) => { const st = m.preventivaStatus && typeof m.preventivaStatus[idx] !== 'undefined' ? m.preventivaStatus[idx] : false; return acc + (st ? 0 : 1); }, 0);
+                const last = m.preventivaDatetime || '';
+                const assin = m.preventivaAssinatura || '';
+                const info = document.createElement('div');
+                info.style = 'color:#666;margin-top:8px;display:flex;flex-direction:column;gap:6px;';
+                info.innerHTML = `<div><strong>Itens:</strong> ${total} (Pendentes: ${pendentes})</div><div><strong>Última preventiva:</strong> ${last ? last : '—'}</div><div><strong>Assinatura:</strong> ${assin ? assin : '—'}</div>`;
+                bloco.appendChild(info);
+                container.appendChild(bloco);
+            });
+
+            // (itens não exibidos aqui; marcações feitas na visualização detalhada)
+
+            // listeners para botão 'Visualizar' que abre nova janela
+            container.querySelectorAll('.btn-open-preventiva').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const id = this.getAttribute('data-id');
+                    abrirPreventivaNovaJanela(id);
+                });
+            });
+        }
+
+        // Aba Peças: renderiza peças das máquinas com filtros e visualização
+        function atualizarTabPecas() {
+            const container = document.getElementById('pecas');
+            if (!container) return;
+            const selMaquina = document.getElementById('pecas-filtro-maquina');
+            const selSetor = document.getElementById('pecas-filtro-setor');
+            const buscaEl = document.getElementById('pecas-busca');
+            const busca = buscaEl ? buscaEl.value.trim().toLowerCase() : '';
+
+            // Preenche selects
+            if (selMaquina) {
+                const prev = selMaquina.value || '';
+                selMaquina.innerHTML = '<option value="">Todas</option>';
+                maquinas.forEach(m => {
+                    const opt = document.createElement('option'); opt.value = m.id; opt.textContent = m.nome + (m.patrimonio ? ' - ' + m.patrimonio : '') + (m.setor ? ' ('+m.setor+')' : ''); selMaquina.appendChild(opt);
+                });
+                if (prev) selMaquina.value = prev;
+                if (!selMaquina.dataset._pecasListener) { selMaquina.addEventListener('change', atualizarTabPecas); selMaquina.dataset._pecasListener = '1'; }
+            }
+            if (selSetor) {
+                const prevs = selSetor.value || '';
+                selSetor.innerHTML = '<option value="">Todos</option>';
+                const setores = Array.from(new Set(maquinas.map(m => m.setor).filter(s => s && s.toString().trim() !== ''))).sort();
+                setores.forEach(s => { const opt = document.createElement('option'); opt.value = s; opt.textContent = s; selSetor.appendChild(opt); });
+                if (prevs) selSetor.value = prevs;
+                if (!selSetor.dataset._pecasListener) { selSetor.addEventListener('change', atualizarTabPecas); selSetor.dataset._pecasListener = '1'; }
+            }
+
+            const tbody = document.querySelector('#tabela-pecas tbody');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+            let count = 0;
+            maquinas.forEach(m => {
+                if (selMaquina && selMaquina.value && m.id !== selMaquina.value) return;
+                if (selSetor && selSetor.value && m.setor !== selSetor.value) return;
+                (m.pecas || []).forEach((p, idx) => {
+                    if (busca && p.toLowerCase().indexOf(busca) === -1) return;
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `<td>${m.nome}</td><td>${m.setor || ''}</td><td>${p}</td><td><button class="btn-action btn-view-peca" data-id="${m.id}" data-idx="${idx}">Ver</button></td>`;
+                    tbody.appendChild(tr);
+                    count++;
+                });
+            });
+            if (count === 0) tbody.innerHTML = '<tr><td colspan="4">Nenhuma peça encontrada.</td></tr>';
+
+            // Events
+            document.querySelectorAll('.btn-view-peca').forEach(btn => btn.addEventListener('click', function() {
+                const id = this.getAttribute('data-id');
+                visualizarMaquina(id);
+            }));
+
+            const buscaEl2 = document.getElementById('pecas-busca');
+            if (buscaEl2 && !buscaEl2.dataset._pecasListener) { buscaEl2.addEventListener('input', atualizarTabPecas); buscaEl2.dataset._pecasListener = '1'; }
+            const refresh = document.getElementById('pecas-refresh');
+            if (refresh && !refresh.dataset._pecasListener) { refresh.addEventListener('click', atualizarTabPecas); refresh.dataset._pecasListener = '1'; }
+        }
+
+        // Garante que a aba peças seja atualizada quando a tabela de máquinas muda
+        // (evita inconsistências quando adicionar/remover máquinas)
+        if (typeof atualizarTabPecas === 'function') atualizarTabPecas();
+
+
+        // Abre preventiva de uma máquina em nova janela (visualização e impressão)
+        function abrirPreventivaNovaJanela(maquinaId) {
+            const maquina = maquinas.find(m => m.id === maquinaId);
+            if (!maquina) return alert('Máquina não encontrada');
+
+            const itens = maquina.preventiva || [];
+            const statusObj = maquina.preventivaStatus || {};
+
+            const itensHtml = itens.length === 0 ? '<p>Sem itens de preventiva cadastrados.</p>' : (`<ul style="padding-left:18px;">${itens.map((it, idx) => {
+                const checked = statusObj[idx] ? 'checked' : '';
+                return `<li><label><input type="checkbox" data-idx="${idx}" ${checked}> ${it}</label></li>`;
+            }).join('')}</ul>`);
+
+            // Data/hora em branco para preenchimento manual
+            const datetimeHtml = `
+                <div style="margin:10px 0;display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                    <label style="font-weight:600;margin-right:8px;">Data e Hora da Preventiva:</label>
+                    <input type="datetime-local" id="preventiva-datetime" value="${maquina.preventivaDatetime || ''}" style="padding:6px;border:1px solid #ccc;border-radius:6px;">
+                </div>
+                <div style="margin:8px 0;display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                    <label style="font-weight:600;margin-right:8px;">Data e Hora da Conclusão:</label>
+                    <input type="datetime-local" id="preventiva-datetime-conclusao" value="${maquina.preventivaConclusaoDatetime || ''}" style="padding:6px;border:1px solid #ccc;border-radius:6px;">
+                </div>
+                <div style="margin:8px 0;display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
+                    <label style="font-weight:600;margin-right:8px;">Hora Início:</label>
+                    <input type="text" id="preventiva-hora-inicio" value="${maquina.preventivaHoraInicio || ''}" placeholder="     :     " style="padding:6px;border:none;border-bottom:1px solid #000;background:transparent;min-width:110px;text-align:left;">
+                    <label style="font-weight:600;margin-left:12px;margin-right:8px;">Hora Fim:</label>
+                    <input type="text" id="preventiva-hora-fim" value="${maquina.preventivaHoraFim || ''}" placeholder="     :     " style="padding:6px;border:none;border-bottom:1px solid #000;background:transparent;min-width:110px;text-align:left;">
+                </div>
+                <div style="margin:8px 0;display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                    <label style="font-weight:600;margin-right:8px;">Assinatura (Nome):</label>
+                    <input type="text" id="preventiva-assinatura" value="${maquina.preventivaAssinatura || ''}" placeholder="Assinatura" style="padding:6px;border:1px solid #ccc;border-radius:6px;min-width:200px;">
+                </div>`;
+
+            const html = `<!DOCTYPE html><html lang="pt-BR"><head><meta charset="utf-8"><title>Preventiva - ${maquina.nome}</title><style>body{font-family:Arial,sans-serif;margin:20px;background:#f6f6f6}header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px} .company{font-weight:bold;color:#39ff14;font-size:1.1em}h1{color:#00843d;margin:0} .card{background:#fff;padding:14px;border-radius:8px;box-shadow:0 1px 6px rgba(0,0,0,0.06)}ul{margin-top:10px} .print-btn{display:inline-block;padding:8px 14px;background:#39ff14;color:#111;border-radius:6px;border:none;font-weight:bold;cursor:pointer;margin-bottom:12px}</style></head><body><header><div class="company">ambipar</div><div style="text-align:right"><h1>Preventiva</h1><div style="font-size:0.9em;color:#666">${maquina.nome}${maquina.patrimonio ? ' - ' + maquina.patrimonio : ''}${maquina.setor ? ' - ' + maquina.setor : ''}</div></div></header><div class="card"><p style="margin:0 0 8px 0"><strong>Patrimônio:</strong> ${maquina.patrimonio || '—'}</p>${datetimeHtml}<button class="print-btn" onclick="window.print()">Imprimir Preventiva</button>${itensHtml}</div><script>
+                (function(){
+                    // Ao mudar um checkbox, sincroniza com a janela principal (se houver)
+                    document.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+                        cb.addEventListener('change', function() {
+                            const idx = parseInt(this.getAttribute('data-idx'), 10);
+                            try {
+                                if (window.opener && !window.opener.closed && window.opener.maquinas) {
+                                    const m = window.opener.maquinas.find(x => x.id === '${maquinaId}');
+                                    if (m) {
+                                        m.preventivaStatus = m.preventivaStatus || {};
+                                        m.preventivaStatus[idx] = this.checked;
+                                        window.opener.localStorage.setItem('maquinas', JSON.stringify(window.opener.maquinas));
+                                        if (window.opener.renderPreventivas) window.opener.renderPreventivas();
+                                        if (window.opener.db) window.opener.db.collection('maquinas').doc(m.id).set(Object.assign({}, m)).catch(()=>{});
+                                    }
+                                } else {
+                                    // Fallback: armazena no próprio localStorage da nova janela
+                                    const ms = JSON.parse(localStorage.getItem('maquinas') || '[]');
+                                    const m = ms.find(x => x.id === '${maquinaId}');
+                                    if (m) {
+                                        m.preventivaStatus = m.preventivaStatus || {};
+                                        m.preventivaStatus[idx] = this.checked;
+                                        localStorage.setItem('maquinas', JSON.stringify(ms));
+                                    }
+                                }
+                            } catch (e) { console.error(e); }
+                        });
+                    });
+
+                    // Date/time input change: sincroniza com a janela principal para persistência
+                    const dtInput = document.getElementById('preventiva-datetime');
+                    if (dtInput) {
+                        dtInput.addEventListener('change', function() {
+                            try {
+                                if (window.opener && !window.opener.closed && window.opener.maquinas) {
+                                    const m = window.opener.maquinas.find(x => x.id === '${maquinaId}');
+                                    if (m) {
+                                        m.preventivaDatetime = this.value || null;
+                                        window.opener.localStorage.setItem('maquinas', JSON.stringify(window.opener.maquinas));
+                                        if (window.opener.renderPreventivas) window.opener.renderPreventivas();
+                                        if (window.opener.db) window.opener.db.collection('maquinas').doc(m.id).set(Object.assign({}, m)).catch(()=>{});
+                                    }
+                                } else {
+                                    const ms = JSON.parse(localStorage.getItem('maquinas') || '[]');
+                                    const m = ms.find(x => x.id === '${maquinaId}');
+                                    if (m) {
+                                        m.preventivaDatetime = this.value || null;
+                                        localStorage.setItem('maquinas', JSON.stringify(ms));
+                                    }
+                                }
+                            } catch (e) { console.error(e); }
+                        });
+                    }
+
+                    // Data/hora de conclusão
+                    const dtConclusao = document.getElementById('preventiva-datetime-conclusao');
+                    if (dtConclusao) {
+                        dtConclusao.addEventListener('change', function() {
+                            try {
+                                if (window.opener && !window.opener.closed && window.opener.maquinas) {
+                                    const m = window.opener.maquinas.find(x => x.id === '${maquinaId}');
+                                    if (m) {
+                                        m.preventivaConclusaoDatetime = this.value || null;
+                                        window.opener.localStorage.setItem('maquinas', JSON.stringify(window.opener.maquinas));
+                                        if (window.opener.renderPreventivas) window.opener.renderPreventivas();
+                                        if (window.opener.db) window.opener.db.collection('maquinas').doc(m.id).set(Object.assign({}, m)).catch(()=>{});
+                                    }
+                                } else {
+                                    const ms = JSON.parse(localStorage.getItem('maquinas') || '[]');
+                                    const m = ms.find(x => x.id === '${maquinaId}');
+                                    if (m) {
+                                        m.preventivaConclusaoDatetime = this.value || null;
+                                        localStorage.setItem('maquinas', JSON.stringify(ms));
+                                    }
+                                }
+                            } catch (e) { console.error(e); }
+                        });
+                    }
+
+                    // Hora início
+                    const hrInicio = document.getElementById('preventiva-hora-inicio');
+                    if (hrInicio) {
+                        hrInicio.addEventListener('change', function() {
+                            try {
+                                if (window.opener && !window.opener.closed && window.opener.maquinas) {
+                                    const m = window.opener.maquinas.find(x => x.id === '${maquinaId}');
+                                    if (m) {
+                                        m.preventivaHoraInicio = this.value || null;
+                                        window.opener.localStorage.setItem('maquinas', JSON.stringify(window.opener.maquinas));
+                                        if (window.opener.renderPreventivas) window.opener.renderPreventivas();
+                                        if (window.opener.db) window.opener.db.collection('maquinas').doc(m.id).set(Object.assign({}, m)).catch(()=>{});
+                                    }
+                                } else {
+                                    const ms = JSON.parse(localStorage.getItem('maquinas') || '[]');
+                                    const m = ms.find(x => x.id === '${maquinaId}');
+                                    if (m) {
+                                        m.preventivaHoraInicio = this.value || null;
+                                        localStorage.setItem('maquinas', JSON.stringify(ms));
+                                    }
+                                }
+                            } catch (e) { console.error(e); }
+                        });
+                    }
+
+                    // Hora fim
+                    const hrFim = document.getElementById('preventiva-hora-fim');
+                    if (hrFim) {
+                        hrFim.addEventListener('change', function() {
+                            try {
+                                if (window.opener && !window.opener.closed && window.opener.maquinas) {
+                                    const m = window.opener.maquinas.find(x => x.id === '${maquinaId}');
+                                    if (m) {
+                                        m.preventivaHoraFim = this.value || null;
+                                        window.opener.localStorage.setItem('maquinas', JSON.stringify(window.opener.maquinas));
+                                        if (window.opener.renderPreventivas) window.opener.renderPreventivas();
+                                        if (window.opener.db) window.opener.db.collection('maquinas').doc(m.id).set(Object.assign({}, m)).catch(()=>{});
+                                    }
+                                } else {
+                                    const ms = JSON.parse(localStorage.getItem('maquinas') || '[]');
+                                    const m = ms.find(x => x.id === '${maquinaId}');
+                                    if (m) {
+                                        m.preventivaHoraFim = this.value || null;
+                                        localStorage.setItem('maquinas', JSON.stringify(ms));
+                                    }
+                                }
+                            } catch (e) { console.error(e); }
+                        });
+                    }
+
+                    // Assinatura
+                    const sigInput = document.getElementById('preventiva-assinatura');
+                    if (sigInput) {
+                        sigInput.addEventListener('change', function() {
+                            try {
+                                if (window.opener && !window.opener.closed && window.opener.maquinas) {
+                                    const m = window.opener.maquinas.find(x => x.id === '${maquinaId}');
+                                    if (m) {
+                                        m.preventivaAssinatura = this.value ? this.value.trim() : null;
+                                        window.opener.localStorage.setItem('maquinas', JSON.stringify(window.opener.maquinas));
+                                        if (window.opener.renderPreventivas) window.opener.renderPreventivas();
+                                        if (window.opener.db) window.opener.db.collection('maquinas').doc(m.id).set(Object.assign({}, m)).catch(()=>{});
+                                    }
+                                } else {
+                                    const ms = JSON.parse(localStorage.getItem('maquinas') || '[]');
+                                    const m = ms.find(x => x.id === '${maquinaId}');
+                                    if (m) {
+                                        m.preventivaAssinatura = this.value ? this.value.trim() : null;
+                                        localStorage.setItem('maquinas', JSON.stringify(ms));
+                                    }
+                                }
+                            } catch (e) { console.error(e); }
+                        });
+                    }
+
+                    // Observações
+                    const obsInput = document.getElementById('preventiva-observacao');
+                    if (obsInput) {
+                        obsInput.addEventListener('change', function() {
+                            try {
+                                if (window.opener && !window.opener.closed && window.opener.maquinas) {
+                                    const m = window.opener.maquinas.find(x => x.id === '${maquinaId}');
+                                    if (m) {
+                                        m.preventivaObservacao = this.value ? this.value.trim() : null;
+                                        window.opener.localStorage.setItem('maquinas', JSON.stringify(window.opener.maquinas));
+                                        if (window.opener.renderPreventivas) window.opener.renderPreventivas();
+                                        if (window.opener.db) window.opener.db.collection('maquinas').doc(m.id).set(Object.assign({}, m)).catch(()=>{});
+                                    }
+                                } else {
+                                    const ms = JSON.parse(localStorage.getItem('maquinas') || '[]');
+                                    const m = ms.find(x => x.id === '${maquinaId}');
+                                    if (m) {
+                                        m.preventivaObservacao = this.value ? this.value.trim() : null;
+                                        localStorage.setItem('maquinas', JSON.stringify(ms));
+                                    }
+                                }
+                            } catch (e) { console.error(e); }
+                        });
+                    }
+                })();
+            <\/script></body></html>`;
+
+            const novaJanela = window.open('', '_blank');
+            if (!novaJanela) { alert('Não foi possível abrir a nova janela. Verifique o bloqueador de pop-ups.'); return; }
+            novaJanela.document.write(html);
+            novaJanela.document.close();
+        }
+
         // Configuração dos formulários
         function configurarFormularios() {
             // Formulário de solicitante
@@ -845,101 +2006,228 @@
             if (solicitanteForm) {
                 solicitanteForm.onsubmit = function(e) {
                     e.preventDefault();
-                    
                     const nome = document.getElementById('solicitante-nome').value.trim();
                     const setor = document.getElementById('solicitante-setor').value;
                     const contato = document.getElementById('solicitante-contato').value.trim();
-                    
                     if (!nome || !setor || !contato) {
                         alert('Preencha todos os campos obrigatórios.');
                         return;
                     }
-                    
                     // Gera ID único
                     const id = Date.now().toString();
-                    
-                    solicitantes.push({
-                        id,
-                        nome,
-                        setor,
-                        contato
+                    const novoSolicitante = { id, nome, setor, contato };
+                    // Salva no Firestore
+                    db.collection('solicitantes').add(novoSolicitante).then(() => {
+                        // Recarrega do Firestore para garantir atualização em todos os dispositivos
+                        db.collection('solicitantes').get().then(snapshot => {
+                            solicitantes = [];
+                            snapshot.forEach(doc => {
+                                let s = doc.data();
+                                s.id = s.id || doc.id;
+                                solicitantes.push(s);
+                            });
+                            atualizarTabelaSolicitantes();
+                            atualizarSelectSolicitantes();
+                            solicitanteForm.reset();
+                            alert('Solicitante cadastrado com sucesso!');
+                        });
+                    }).catch((error) => {
+                        alert('Erro ao salvar solicitante no banco de dados: ' + error.message);
                     });
-                    
-                    localStorage.setItem('solicitantes', JSON.stringify(solicitantes));
-                    atualizarTabelaSolicitantes();
-                    atualizarSelectSolicitantes();
-                    
-                    solicitanteForm.reset();
-                    alert('Solicitante cadastrado com sucesso!');
                 };
             }
-            
+
             // Formulário de técnico
             const tecnicoForm = document.getElementById('tecnicoForm');
             if (tecnicoForm) {
                 tecnicoForm.onsubmit = function(e) {
                     e.preventDefault();
-                    
                     const nome = document.getElementById('tecnico-nome').value.trim();
                     const especialidade = document.getElementById('tecnico-especialidade').value;
                     const contato = document.getElementById('tecnico-contato').value.trim();
-                    
                     if (!nome || !especialidade || !contato) {
                         alert('Preencha todos os campos obrigatórios.');
                         return;
                     }
-                    
                     // Gera ID único
                     const id = Date.now().toString();
-                    
-                    tecnicos.push({
-                        id,
-                        nome,
-                        especialidade,
-                        contato
+                    const novoTecnico = { id, nome, especialidade, contato };
+                    // Salva no Firestore
+                    db.collection('tecnicos').add(novoTecnico).then(() => {
+                        // Recarrega do Firestore para garantir atualização em todos os dispositivos
+                        db.collection('tecnicos').get().then(snapshot => {
+                            tecnicos = [];
+                            snapshot.forEach(doc => {
+                                let t = doc.data();
+                                t.id = t.id || doc.id;
+                                tecnicos.push(t);
+                            });
+                            atualizarTabelaTecnicos();
+                            atualizarSelectTecnicos();
+                            atualizarSelectFiltroTecnicos();
+                            tecnicoForm.reset();
+                            alert('Técnico cadastrado com sucesso!');
+                        });
+                    }).catch((error) => {
+                        alert('Erro ao salvar técnico no banco de dados: ' + error.message);
                     });
-                    
-                    localStorage.setItem('tecnicos', JSON.stringify(tecnicos));
-                    atualizarTabelaTecnicos();
-                    atualizarSelectTecnicos();
-                    atualizarSelectFiltroTecnicos();
-                    
-                    tecnicoForm.reset();
-                    alert('Técnico cadastrado com sucesso!');
+                };
+            }
+
+            // Formulário de Máquina
+            const maquinaForm = document.getElementById('maquinaForm');
+            if (maquinaForm) {
+                // Elementos para listas
+                const pecaInput = document.getElementById('maquina-peca-input');
+                const btnAddPeca = document.getElementById('btn-add-peca');
+                const pecasListEl = document.getElementById('maquina-pecas-list');
+                const preventivaInput = document.getElementById('maquina-preventiva-input');
+                const btnAddPreventiva = document.getElementById('btn-add-preventiva');
+                const preventivaListEl = document.getElementById('maquina-preventiva-list');
+
+                function createListItem(value) {
+                    const li = document.createElement('li');
+                    li.dataset.value = value;
+                    li.style.display = 'flex';
+                    li.style.justifyContent = 'space-between';
+                    li.style.alignItems = 'center';
+                    li.style.marginBottom = '6px';
+                    const span = document.createElement('span');
+                    span.textContent = value;
+                    const btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.className = 'btn-action';
+                    btn.textContent = 'Remover';
+                    btn.style.marginLeft = '8px';
+                    btn.addEventListener('click', function() { li.remove(); });
+                    li.appendChild(span);
+                    li.appendChild(btn);
+                    return li;
+                }
+
+                if (btnAddPeca) btnAddPeca.addEventListener('click', function() {
+                    const v = (pecaInput.value || '').trim();
+                    if (!v) return;
+                    pecasListEl.appendChild(createListItem(v));
+                    pecaInput.value = '';
+                });
+                if (btnAddPreventiva) btnAddPreventiva.addEventListener('click', function() {
+                    const v = (preventivaInput.value || '').trim();
+                    if (!v) return;
+                    preventivaListEl.appendChild(createListItem(v));
+                    preventivaInput.value = '';
+                });
+
+                function clearMaquinaLists() {
+                    pecasListEl.innerHTML = '';
+                    preventivaListEl.innerHTML = '';
+                }
+
+                maquinaForm.onsubmit = function(e) {
+                    e.preventDefault();
+                    try {
+                        const nome = document.getElementById('maquina-nome').value.trim();
+                        const patrimonio = document.getElementById('maquina-patrimonio').value.trim();
+                        const setor = document.getElementById('maquina-setor').value;
+                        if (!nome || !setor) {
+                            alert('Preencha todos os campos obrigatórios.');
+                            return;
+                        }
+                        const pecas = Array.from(pecasListEl.querySelectorAll('li')).map(li => li.dataset.value || li.textContent.trim());
+                        const preventiva = Array.from(preventivaListEl.querySelectorAll('li')).map(li => li.dataset.value || li.textContent.trim());
+                        const id = Date.now().toString();
+                        const novaMaquina = { id, nome, patrimonio, setor, pecas, preventiva };
+
+                        if (typeof db !== 'undefined') {
+                            db.collection('maquinas').doc(id).set(novaMaquina).then(() => {
+                                // Atualiza localmente e tenta recarregar do Firestore, se função disponível
+                                maquinas.push(novaMaquina);
+                                localStorage.setItem('maquinas', JSON.stringify(maquinas));
+                                atualizarTabelaMaquinas();
+                                atualizarSelectMaquinas();
+                                maquinaForm.reset();
+                                clearMaquinaLists();
+                                alert('Máquina cadastrada com sucesso!');
+                                try {
+                                    if (typeof carregarMaquinasFirestore === 'function') {
+                                        carregarMaquinasFirestore(function() {
+                                            atualizarTabelaMaquinas();
+                                            atualizarSelectMaquinas();
+                                        });
+                                    }
+                                } catch (err) { console.warn('carregarMaquinasFirestore não está disponível:', err); }
+                            }).catch((error) => {
+                                console.error('Erro ao salvar máquina no Firestore:', error);
+                                // Fallback: salva localmente e atualiza UI
+                                maquinas.push(novaMaquina);
+                                localStorage.setItem('maquinas', JSON.stringify(maquinas));
+                                atualizarTabelaMaquinas();
+                                atualizarSelectMaquinas();
+                                maquinaForm.reset();
+                                clearMaquinaLists();
+                                alert('Máquina salva localmente devido a erro no banco (ver console para detalhes).');
+                            });
+                        } else {
+                            // Firestore não disponível — salva localmente
+                            maquinas.push(novaMaquina);
+                            localStorage.setItem('maquinas', JSON.stringify(maquinas));
+                            atualizarTabelaMaquinas();
+                            atualizarSelectMaquinas();
+                            maquinaForm.reset();
+                            clearMaquinaLists();
+                            alert('Máquina cadastrada com sucesso (salva localmente).');
+                        }
+                    } catch (err) {
+                        console.error('Erro ao processar formulário de máquina:', err);
+                        alert('Ocorreu um erro ao processar o formulário. Verifique o console para detalhes.');
+                    }
                 };
             }
             
             // Formulário de OS
             const osForm = document.getElementById('osForm');
             if (osForm) {
+                // Integração com seleção de máquina
+                const osMaquinaSelect = document.getElementById('os-maquina');
+                if (osMaquinaSelect) {
+                    // torna obrigatório e preenche patrimônio ao selecionar
+                    osMaquinaSelect.required = true;
+                    osMaquinaSelect.addEventListener('change', function() {
+                        const maquina = maquinas.find(m => m.id === this.value);
+                        if (maquina) {
+                            document.getElementById('os-serial').value = maquina.patrimonio || '';
+                        } else {
+                            document.getElementById('os-serial').value = '';
+                        }
+                    });
+                }
+
                 osForm.onsubmit = function(e) {
                     e.preventDefault();
-                    
                     const solicitanteId = document.getElementById('os-solicitante').value;
                     const setor = document.getElementById('os-setor').value;
-                    const equipamento = document.getElementById('os-equipamento').value.trim();
-                    const serial = document.getElementById('os-serial').value.trim();
                     const tecnicoId = document.getElementById('os-tecnico').value;
+                    const maquinaId = document.getElementById('os-maquina') ? document.getElementById('os-maquina').value : '';
+                    const maquinaObj = maquinas.find(m => m.id === maquinaId) || null;
+                    const equipamento = maquinaObj ? maquinaObj.nome : '';
+                    const serial = maquinaObj ? (maquinaObj.patrimonio || '') : document.getElementById('os-serial').value.trim();
                     const data = document.getElementById('os-data').value;
                     const prazo = document.getElementById('os-prazo').value;
                     const problema = document.getElementById('os-problema').value.trim();
                     const diagnostico = document.getElementById('os-diagnostico').value.trim();
                     const solucao = document.getElementById('os-solucao').value.trim();
                     const status = document.getElementById('os-status').value;
-                    
-                    if (!solicitanteId || !setor || !equipamento || !tecnicoId || !data || !problema) {
+                    if (!solicitanteId || !setor || !maquinaId || !tecnicoId || !data || !problema) {
                         alert('Preencha todos os campos obrigatórios.');
                         return;
                     }
-                    
                     // Incrementa número da OS
                     ultimoNumeroOS++;
                     localStorage.setItem('ultimoNumeroOS', ultimoNumeroOS);
-                    
                     // Gera ID único
                     const id = Date.now().toString();
-                    
-                    ordensServico.push({
+
+                    const osObj = {
                         id,
                         numero: ultimoNumeroOS,
                         solicitanteId,
@@ -947,6 +2235,7 @@
                         equipamento,
                         serial,
                         tecnicoId,
+                        maquinaId,
                         data,
                         prazo,
                         problema,
@@ -954,21 +2243,37 @@
                         solucao,
                         status,
                         dataConclusao: status === 'concluida' ? new Date().toISOString().split('T')[0] : null
-                    });
-                    
-                    localStorage.setItem('ordensServico', JSON.stringify(ordensServico));
-                    atualizarTabelaOS();
-                    atualizarTabelaHistorico();
-                    atualizarDashboard();
-                    
-                    osForm.reset();
-                    document.getElementById('os-data').valueAsDate = new Date();
-                    
-                    alert(`Ordem de Serviço #${ultimoNumeroOS} cadastrada com sucesso!`);
-                    
-                    // Pergunta se deseja imprimir a OS
-                    if (confirm('Deseja imprimir esta ordem de serviço?')) {
-            abrirOSNovaPagina(id);
+                    };
+
+                    if (typeof db !== 'undefined') {
+                        db.collection('ordensServico').add(osObj).then((docRef) => {
+                            // Atualiza localmente para refletir na UI imediatamente
+                            ordensServico.push(osObj);
+                            localStorage.setItem('ordensServico', JSON.stringify(ordensServico));
+                            atualizarTabelaOS();
+                            atualizarTabelaHistorico();
+                            atualizarDashboard();
+                            osForm.reset();
+                            document.getElementById('os-data').valueAsDate = new Date();
+                            alert(`Ordem de Serviço #${ultimoNumeroOS} cadastrada com sucesso!`);
+                            if (confirm('Deseja imprimir esta ordem de serviço?')) {
+                                abrirOSNovaPagina(id);
+                            }
+                        }).catch((error) => {
+                            alert('Erro ao salvar OS no banco de dados: ' + error.message);
+                        });
+                    } else {
+                        ordensServico.push(osObj);
+                        localStorage.setItem('ordensServico', JSON.stringify(ordensServico));
+                        atualizarTabelaOS();
+                        atualizarTabelaHistorico();
+                        atualizarDashboard();
+                        osForm.reset();
+                        document.getElementById('os-data').valueAsDate = new Date();
+                        alert(`Ordem de Serviço #${ultimoNumeroOS} cadastrada com sucesso!`);
+                        if (confirm('Deseja imprimir esta ordem de serviço?')) {
+                            abrirOSNovaPagina(id);
+                        }
                     }
                 };
             }
@@ -1069,97 +2374,107 @@
         function atualizarTabelaOS() {
             const tbody = document.querySelector('#tabela-os tbody');
             if (!tbody) return;
-            
             tbody.innerHTML = '';
-            
+
             const filtroStatus = document.getElementById('filtro-status').value;
             const filtroTecnico = document.getElementById('filtro-tecnico').value;
-            
-            let osFiltradas = ordensServico.filter(os => {
-                // Filtra por status se selecionado
-                if (filtroStatus && os.status !== filtroStatus) return false;
-                
-                // Filtra por técnico se selecionado
-                if (filtroTecnico && os.tecnicoId !== filtroTecnico) return false;
-                
-                return true;
-            });
-            
-            // Ordena por data (mais recente primeiro)
-            osFiltradas.sort((a, b) => new Date(b.data) - new Date(a.data));
-            
-            osFiltradas.forEach(os => {
-                const solicitante = solicitantes.find(s => s.id === os.solicitanteId) || {};
-                const tecnico = tecnicos.find(t => t.id === os.tecnicoId) || {};
-                
-                let statusClass = '';
-                if (os.status === 'pendente') statusClass = 'status-pendente';
-                else if (os.status === 'andamento') statusClass = 'status-andamento';
-                else if (os.status === 'concluida') statusClass = 'status-concluida';
-                else if (os.status === 'cancelada') statusClass = 'status-cancelada';
-                
-                const statusText = os.status === 'pendente' ? 'Pendente' :
-                                  os.status === 'andamento' ? 'Em Andamento' :
-                                  os.status === 'concluida' ? 'Concluída' : 'Cancelada';
-                
-                const statusSelect = `
-<select class="status-select" data-id="${os.id}">
-    <option value="pendente" ${os.status === 'pendente' ? 'selected' : ''}>Pendente</option>
-    <option value="andamento" ${os.status === 'andamento' ? 'selected' : ''}>Em Andamento</option>
-    <option value="concluida" ${os.status === 'concluida' ? 'selected' : ''}>Concluída</option>
-    <option value="cancelada" ${os.status === 'cancelada' ? 'selected' : ''}>Cancelada</option>
-</select>
-`;
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td>#${os.numero}</td>
-                    <td>${solicitante.nome || 'Solicitante não encontrado'}</td>
-                    <td>${os.setor}</td>
-                    <td>${os.equipamento}</td>
-                    <td>${formatarData(os.data)}</td>
-                    <td class="${statusClass}">${statusSelect}</td>
-                    <td>
-                        <button class="btn-action btn-edit" data-id="${os.id}">Editar</button>
-                        <button class="btn-action btn-view" data-id="${os.id}">Visualizar</button>
-                    </td>
-                `;
-                tbody.appendChild(tr);
-            });
-            
-            // Configura eventos dos botões
-            document.querySelectorAll('.btn-edit').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const osId = this.getAttribute('data-id');
-                    editarOS(osId);
+
+            // Busca OS do Firestore
+            db.collection('ordensServico').orderBy('numero', 'desc').get().then(snapshot => {
+                let osList = [];
+                snapshot.forEach(doc => {
+                    let os = doc.data();
+                    os.id = doc.id;
+                    osList.push(os);
+                });
+
+                // Filtra
+                let osFiltradas = osList.filter(os => {
+                    if (filtroStatus && os.status !== filtroStatus) return false;
+                    if (filtroTecnico && os.tecnicoId !== filtroTecnico) return false;
+                    return true;
+                });
+
+                osFiltradas.forEach(os => {
+                    const solicitante = solicitantes.find(s => s.id === os.solicitanteId) || {};
+                    const tecnico = tecnicos.find(t => t.id === os.tecnicoId) || {};
+
+                    let statusClass = '';
+                    if (os.status === 'pendente') statusClass = 'status-pendente';
+                    else if (os.status === 'andamento') statusClass = 'status-andamento';
+                    else if (os.status === 'concluida') statusClass = 'status-concluida';
+                    else if (os.status === 'cancelada') statusClass = 'status-cancelada';
+
+                    // Todos podem alterar status
+                    let statusCell = `<select class="status-select" data-id="${os.id}">
+                        <option value="pendente" ${os.status === 'pendente' ? 'selected' : ''}>Pendente</option>
+                        <option value="andamento" ${os.status === 'andamento' ? 'selected' : ''}>Em Andamento</option>
+                        <option value="concluida" ${os.status === 'concluida' ? 'selected' : ''}>Concluída</option>
+                        <option value="cancelada" ${os.status === 'cancelada' ? 'selected' : ''}>Cancelada</option>
+                    </select>`;
+
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>#${os.numero}</td>
+                        <td>${solicitante.nome || 'Solicitante não encontrado'}</td>
+                        <td>${os.setor}</td>
+                        <td>${os.equipamento}</td>
+                        <td>${formatarData(os.data)}</td>
+                        <td class="${statusClass}">${statusCell}</td>
+                        <td>
+                            <button class="btn-action btn-edit" data-id="${os.id}">Editar</button>
+                            <button class="btn-action btn-view" data-id="${os.id}">Visualizar</button>
+                            <button class="btn-action btn-delete" data-id="${os.id}" style="background:#d00;color:#fff;margin-left:4px;">Apagar</button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+
+                // Configura eventos dos botões
+                document.querySelectorAll('.btn-edit').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const osId = this.getAttribute('data-id');
+                        editarOS(osId);
+                    });
+                });
+                document.querySelectorAll('.btn-view').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const osId = this.getAttribute('data-id');
+                        abrirOSNovaPagina(osId);
+                    });
+                });
+                document.querySelectorAll('.btn-delete').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const osId = this.getAttribute('data-id');
+                        if (confirm('Tem certeza que deseja apagar esta Ordem de Serviço?')) {
+                            db.collection('ordensServico').doc(osId).delete().then(() => {
+                                atualizarTabelaOS();
+                                atualizarTabelaHistorico && atualizarTabelaHistorico();
+                                atualizarDashboard && atualizarDashboard();
+                            }).catch(err => {
+                                alert('Erro ao apagar OS: ' + err.message);
+                            });
+                        }
+                    });
+                });
+
+                // Todos podem alterar status
+                document.querySelectorAll('.status-select').forEach(select => {
+                    select.addEventListener('change', function() {
+                        const osId = this.getAttribute('data-id');
+                        const novaStatus = this.value;
+                        // Atualiza status no Firestore
+                        db.collection('ordensServico').doc(osId).update({
+                            status: novaStatus,
+                            dataConclusao: novaStatus === 'concluida' ? new Date().toISOString().split('T')[0] : null
+                        }).then(() => {
+                            atualizarTabelaOS();
+                            atualizarTabelaHistorico();
+                            atualizarDashboard();
+                        });
+                    });
                 });
             });
-            document.querySelectorAll('.btn-view').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const osId = this.getAttribute('data-id');
-                    abrirOSNovaPagina(osId);
-                });
-            });
-            
-            // Adiciona evento para alteração de status
-    document.querySelectorAll('.status-select').forEach(select => {
-        select.addEventListener('change', function() {
-            const osId = this.getAttribute('data-id');
-            const novaStatus = this.value;
-            const os = ordensServico.find(o => o.id === osId);
-            if (os) {
-                os.status = novaStatus;
-                if (novaStatus === 'concluida') {
-                    os.dataConclusao = new Date().toISOString().split('T')[0];
-                } else {
-                    os.dataConclusao = null;
-                }
-                localStorage.setItem('ordensServico', JSON.stringify(ordensServico));
-                atualizarTabelaOS();
-                atualizarTabelaHistorico();
-                atualizarDashboard();
-            }
-        });
-    });
         }
         
         function atualizarTabelaHistorico() {
@@ -1287,8 +2602,16 @@
             // Preenche os campos do formulário
             document.getElementById('os-solicitante').value = os.solicitanteId;
             document.getElementById('os-setor').value = os.setor;
-            document.getElementById('os-equipamento').value = os.equipamento;
-            document.getElementById('os-serial').value = os.serial || '';
+            // Preenche máquina e patrimônio (compatível com OS antigas)
+            if (os.maquinaId && document.getElementById('os-maquina')) {
+                document.getElementById('os-maquina').value = os.maquinaId || '';
+                const maquina = maquinas.find(m => m.id === os.maquinaId);
+                if (maquina) document.getElementById('os-serial').value = maquina.patrimonio || '';
+                else document.getElementById('os-serial').value = os.serial || '';
+            } else {
+                // Se não houver máquina associada (OS antiga), mostra patrimônio salvo
+                document.getElementById('os-serial').value = os.serial || '';
+            }
             document.getElementById('os-tecnico').value = os.tecnicoId;
             document.getElementById('os-data').value = os.data;
             document.getElementById('os-prazo').value = os.prazo || '';
@@ -1544,6 +2867,23 @@
                     <h3>Solução Aplicada</h3>
                     ${solucaoHtml}
                 </div>
+                <div class="os-details os-times">
+                    <h3>Horário do Serviço</h3>
+                    ${ (os.servicos && os.servicos.length) ? os.servicos.map(s => `
+                        <div style="margin-bottom:10px;">
+                            <strong>${s}</strong>
+                            <div style="margin-top:6px;">
+                                <span style="display:inline-block; min-width:160px; border-bottom:1px solid #000; padding-bottom:6px;"></span> <small>Hora Início</small>
+                                <span style="display:inline-block; min-width:160px; border-bottom:1px solid #000; padding-bottom:6px; margin-left:24px;"></span> <small>Hora Término</small>
+                            </div>
+                        </div>
+                    `).join('') : `
+                        <div style="margin-top:6px;">
+                            <span style="display:inline-block; min-width:160px; border-bottom:1px solid #000; padding-bottom:6px;"></span> <small>Hora Início</small>
+                            <span style="display:inline-block; min-width:160px; border-bottom:1px solid #000; padding-bottom:6px; margin-left:24px;"></span> <small>Hora Término</small>
+                        </div>
+                    ` }
+                </div>
                 <div class="os-signatures">
                     <div class="os-signature">
                         <p>______________________________</p>
@@ -1584,9 +2924,9 @@
                 tecnicoCounts[tecnico.nome] = ordensServico.filter(os => os.tecnicoId === tecnico.id).length;
             });
             
-            // OS por setor
+            // OS por setor (dinâmico a partir das OS cadastradas)
+            const setores = Array.from(new Set(ordensServico.map(os => os.setor).filter(s => s && s.toString().trim() !== ''))).sort();
             const setorCounts = {};
-            const setores = ['Produção', 'Manutenção', 'Qualidade', 'Logística', 'Administrativo', 'Outros'];
             setores.forEach(setor => {
                 setorCounts[setor] = ordensServico.filter(os => os.setor === setor).length;
             });
@@ -1595,11 +2935,502 @@
             document.getElementById('chart-status').innerHTML = '<p>Gráfico: OS por Status</p>';
             document.getElementById('chart-tecnicos').innerHTML = '<p>Gráfico: OS por Técnico</p>';
             document.getElementById('chart-setores').innerHTML = '<p>Gráfico: OS por Setor</p>';
+            // Gera relatório padrão (mensal) quando a aba estiver disponível
+            if (document.getElementById('relatorio-periodo')) gerarRelatorio();
         }
         
+        let relatorioAtual = [];
+        let chartStatusObj = null;
+        let chartTecnicosObj = null;
+        let chartSetoresObj = null;
+        let chartMaquinasObj = null;
+        let chartPorTecnicoObjs = [];
+        let chartJsLoading = false;
+        let pendingChartCallbacks = [];
+
+        function ensureChartJsLoaded(cb) {
+            if (typeof Chart !== 'undefined') { if (cb) cb(); return; }
+            if (cb) pendingChartCallbacks.push(cb);
+            if (chartJsLoading) return;
+            // Verifica se já existe uma tag script apontando para chart.js
+            const existing = Array.from(document.querySelectorAll('script')).find(s => s.src && s.src.includes('chart.js'));
+            if (existing) {
+                chartJsLoading = true;
+                existing.addEventListener('load', function() {
+                    chartJsLoading = false;
+                    pendingChartCallbacks.forEach(c => c());
+                    pendingChartCallbacks = [];
+                });
+                existing.addEventListener('error', function() {
+                    chartJsLoading = false;
+                    console.error('Falha ao carregar Chart.js');
+                    pendingChartCallbacks = [];
+                });
+                return;
+            }
+
+            chartJsLoading = true;
+            const script = document.createElement('script');
+            script.src = 'https://cdn.jsdelivr.net/npm/chart.js';
+            script.onload = function() {
+                chartJsLoading = false;
+                pendingChartCallbacks.forEach(c => c());
+                pendingChartCallbacks = [];
+            };
+            script.onerror = function() {
+                chartJsLoading = false;
+                console.error('Falha ao carregar Chart.js');
+                pendingChartCallbacks = [];
+            };
+            document.body.appendChild(script);
+        }
+
+        function configurarRelatorios() {
+            const periodoSelect = document.getElementById('relatorio-periodo');
+            const inicioInput = document.getElementById('relatorio-inicio');
+            const fimInput = document.getElementById('relatorio-fim');
+            const labelInicio = document.getElementById('label-relatorio-inicio');
+            const labelFim = document.getElementById('label-relatorio-fim');
+            const btnGerar = document.getElementById('btn-gerar-relatorio');
+            const btnExport = document.getElementById('btn-exportar-relatorio');
+            const btnPrint = document.getElementById('btn-imprimir-relatorio');
+
+            if (periodoSelect) {
+                periodoSelect.addEventListener('change', function() {
+                    const personalizado = this.value === 'personalizado';
+                    inicioInput.style.display = personalizado ? 'inline-block' : 'none';
+                    fimInput.style.display = personalizado ? 'inline-block' : 'none';
+                    labelInicio.style.display = personalizado ? 'inline-block' : 'none';
+                    labelFim.style.display = personalizado ? 'inline-block' : 'none';
+                });
+            }
+
+            if (btnGerar) btnGerar.addEventListener('click', function() { gerarRelatorio(); });
+            if (btnExport) btnExport.addEventListener('click', exportarRelatorioCSV);
+            if (btnPrint) btnPrint.addEventListener('click', imprimirRelatorio);
+            const btnOpen = document.getElementById('btn-abrir-relatorio-nova-janela');
+            if (btnOpen) btnOpen.addEventListener('click', abrirRelatorioNovaJanela);
+
+            // Valores padrão
+            if (document.getElementById('relatorio-fim')) document.getElementById('relatorio-fim').valueAsDate = new Date();
+            const inicioDefault = new Date();
+            inicioDefault.setDate(inicioDefault.getDate() - 30);
+            if (document.getElementById('relatorio-inicio')) document.getElementById('relatorio-inicio').valueAsDate = inicioDefault;
+        }
+
+        function obterPeriodo(valor) {
+            const hoje = new Date();
+            let inicio = null;
+            let fim = new Date();
+
+            if (valor === 'semanal') {
+                inicio = new Date();
+                inicio.setDate(hoje.getDate() - 6);
+            } else if (valor === 'mensal') {
+                inicio = new Date();
+                inicio.setDate(hoje.getDate() - 29);
+            } else if (valor === 'anual') {
+                inicio = new Date();
+                inicio.setDate(hoje.getDate() - 364);
+            } else if (valor === 'completo') {
+                inicio = new Date(2000,0,1);
+            } else if (valor === 'personalizado') {
+                const s = document.getElementById('relatorio-inicio').value;
+                const e = document.getElementById('relatorio-fim').value;
+                if (!s || !e) return null;
+                inicio = new Date(s);
+                fim = new Date(e);
+            } else {
+                // padrão monthly
+                inicio = new Date();
+                inicio.setDate(hoje.getDate() - 29);
+            }
+
+            fim.setHours(23,59,59,999);
+            return { inicio, fim };
+        }
+
+        function gerarRelatorio(periodoArg) {
+            const periodoSelect = document.getElementById('relatorio-periodo');
+            const periodo = periodoArg || (periodoSelect ? periodoSelect.value : 'mensal');
+            const range = obterPeriodo(periodo);
+            if (!range) {
+                alert('Defina corretamente o período personalizado.');
+                return;
+            }
+            const { inicio, fim } = range;
+
+            const resultados = ordensServico.filter(os => {
+                const dataOS = new Date(os.data);
+                return dataOS >= inicio && dataOS <= fim;
+            });
+
+            relatorioAtual = resultados;
+
+            // Resumo
+            const summary = document.getElementById('relatorio-summary');
+            const total = resultados.length;
+            const pend = resultados.filter(r => r.status === 'pendente').length;
+            const and = resultados.filter(r => r.status === 'andamento').length;
+            const conc = resultados.filter(r => r.status === 'concluida').length;
+            const canc = resultados.filter(r => r.status === 'cancelada').length;
+
+            summary.innerHTML = `<p><strong>Período:</strong> ${formatarData(inicio.toISOString().split('T')[0])} - ${formatarData(fim.toISOString().split('T')[0])} &nbsp; <strong>Total OS:</strong> ${total} (P: ${pend} | A: ${and} | C: ${conc} | X: ${canc})</p>`;
+
+            // Preenche tabela
+            const tbody = document.querySelector('#tabela-relatorio tbody');
+            tbody.innerHTML = '';
+
+            resultados.sort((a,b) => new Date(b.data) - new Date(a.data)).forEach(os => {
+                const solicitante = solicitantes.find(s => s.id === os.solicitanteId) || {};
+                const tecnico = tecnicos.find(t => t.id === os.tecnicoId) || {};
+                const statusText = os.status === 'pendente' ? 'Pendente' : os.status === 'andamento' ? 'Em Andamento' : os.status === 'concluida' ? 'Concluída' : 'Cancelada';
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>#${os.numero}</td>
+                    <td>${solicitante.nome || '—'}</td>
+                    <td>${os.setor}</td>
+                    <td>${os.equipamento}</td>
+                    <td>${formatarData(os.data)}</td>
+                    <td>${statusText}</td>
+                    <td>${tecnico.nome || '—'}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            // Resumo por técnico (apenas dados)
+            try {
+                const tabelaTec = document.querySelector('#tabela-tecnicos-resumo tbody');
+                if (tabelaTec) {
+                    tabelaTec.innerHTML = '';
+                    if (tecnicos && tecnicos.length) {
+                        const resumo = tecnicos.map(t => {
+                            const pendentes = resultados.filter(r => r.tecnicoId === t.id && r.status === 'pendente').length;
+                            const concluidas = resultados.filter(r => r.tecnicoId === t.id && r.status === 'concluida').length;
+                            const totalTec = pendentes + concluidas;
+                            return { nome: t.nome || '—', pendentes, concluidas, total: totalTec };
+                        }).filter(r => r.pendentes > 0 || r.concluidas > 0 || r.total > 0);
+
+                        if (resumo.length) {
+                            resumo.sort((a,b) => b.total - a.total).forEach(r => {
+                                const tr = document.createElement('tr');
+                                tr.innerHTML = `<td>${r.nome}</td><td>${r.pendentes}</td><td>${r.concluidas}</td><td>${r.total}</td>`;
+                                tabelaTec.appendChild(tr);
+                            });
+                            document.getElementById('btn-exportar-tecnicos').disabled = false;
+                        } else {
+                            tabelaTec.innerHTML = '<tr><td colspan="4">Nenhuma ordem por técnico nesse período.</td></tr>';
+                            document.getElementById('btn-exportar-tecnicos').disabled = true;
+                        }
+                    } else {
+                        tabelaTec.innerHTML = '<tr><td colspan="4">Nenhum técnico cadastrado.</td></tr>';
+                        document.getElementById('btn-exportar-tecnicos').disabled = true;
+                    }
+                }
+            } catch (e) {
+                console.warn('Erro ao gerar resumo por técnico:', e);
+                const tabelaTec = document.querySelector('#tabela-tecnicos-resumo tbody'); if (tabelaTec) tabelaTec.innerHTML = '<tr><td colspan="4">Erro ao gerar resumo.</td></tr>';
+                try { document.getElementById('btn-exportar-tecnicos').disabled = true; } catch(e){}
+            }
+
+            // Habilita botões
+            document.getElementById('btn-exportar-relatorio').disabled = resultados.length === 0;
+            document.getElementById('btn-imprimir-relatorio').disabled = resultados.length === 0;
+            const btnOpen = document.getElementById('btn-abrir-relatorio-nova-janela'); if (btnOpen) btnOpen.disabled = resultados.length === 0;
+
+            // Atualiza gráficos (texto simples quando biblioteca não estiver disponível)
+            atualizarGraficosRelatorio(resultados);
+        }
+
+        function atualizarGraficosRelatorio(resultados) {
+            // Se Chart.js não estiver disponível, faz fila para executar quando carregar
+            if (typeof Chart === 'undefined') {
+                document.getElementById('chart-status').innerHTML = '<p>Carregando gráficos...</p>';
+                document.getElementById('chart-tecnicos').innerHTML = '<p>Carregando gráficos...</p>';
+                document.getElementById('chart-setores').innerHTML = '<p>Carregando gráficos...</p>';
+                document.getElementById('chart-maquinas').innerHTML = '<p>Carregando gráficos...</p>';
+                ensureChartJsLoaded(function() { atualizarGraficosRelatorio(resultados); });
+                return;
+            }
+
+            try {
+                // Contagens por status
+                const statusCounts = [
+                    resultados.filter(r => r.status === 'pendente').length,
+                    resultados.filter(r => r.status === 'andamento').length,
+                    resultados.filter(r => r.status === 'concluida').length,
+                    resultados.filter(r => r.status === 'cancelada').length
+                ];
+                const statusLabels = ['Pendente', 'Em Andamento', 'Concluída', 'Cancelada'];
+
+                // Contagens por técnico
+                const tecnicoLabels = tecnicos.map(t => t.nome);
+                const tecnicoData = tecnicos.map(t => resultados.filter(r => r.tecnicoId === t.id).length);
+
+                // Contagens por setor (dinâmico a partir das OS no período)
+                const setores = Array.from(new Set(resultados.map(r => r.setor).filter(s => s && s.toString().trim() !== ''))).sort();
+                const setorData = setores.map(s => resultados.filter(r => r.setor === s).length);
+
+                // Destrói gráficos existentes
+                if (chartStatusObj) { chartStatusObj.destroy(); chartStatusObj = null; }
+                if (chartTecnicosObj) { chartTecnicosObj.destroy(); chartTecnicosObj = null; }
+                if (chartSetoresObj) { chartSetoresObj.destroy(); chartSetoresObj = null; }
+
+                const ctxStatus = document.getElementById('chart-status').getContext('2d');
+                const gradStatus1 = ctxStatus.createLinearGradient(0,0,0,180);
+                gradStatus1.addColorStop(0,'#ffd59a');
+                gradStatus1.addColorStop(1,'#f39c12');
+                chartStatusObj = new Chart(ctxStatus, {
+                    type: 'doughnut',
+                    data: {
+                        labels: statusLabels,
+                        datasets: [{
+                            data: statusCounts,
+                            backgroundColor: ['#d00','#ff9f00','#2ecc71','#95a5a6'],
+                            hoverOffset: 8
+                        }]
+                    },
+
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        cutout: '55%',
+                        plugins: {
+                            legend: { position: 'right', labels: { boxWidth: 12, padding: 10, font: { size: 12 } } },
+                            tooltip: { callbacks: { label: function(ctx){ return ctx.label + ': ' + ctx.formattedValue; } } }
+                        },
+                        layout: { padding: { top: 6, bottom: 6 } }
+                    }
+                });
+
+                const ctxTec = document.getElementById('chart-tecnicos').getContext('2d');
+                // Preparar dados por status para cada técnico
+                const pendData = tecnicos.map(t => resultados.filter(r => r.tecnicoId === t.id && r.status === 'pendente').length);
+                const andData = tecnicos.map(t => resultados.filter(r => r.tecnicoId === t.id && r.status === 'andamento').length);
+                const concData = tecnicos.map(t => resultados.filter(r => r.tecnicoId === t.id && r.status === 'concluida').length);
+
+                // Desenha gráfico agrupado (3 datasets: Pendente, Em Andamento, Concluída)
+                chartTecnicosObj = new Chart(ctxTec, {
+                    type: 'bar',
+                    data: {
+                        labels: tecnicoLabels,
+                        datasets: [
+                            { label: 'Pendente', data: pendData, backgroundColor: '#f39c12' },
+                            { label: 'Em Andamento', data: andData, backgroundColor: '#ff9f00' },
+                            { label: 'Concluída', data: concData, backgroundColor: '#2ecc71' }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: true, position: 'bottom', labels: { boxWidth: 12, font: { size: 12 } } },
+                            tooltip: { mode: 'index', intersect: false }
+                        },
+                        scales: {
+                            x: { ticks: { autoSkip: true, maxRotation: 45, minRotation: 0 }, grid: { display: false } },
+                            y: { beginAtZero: true, grid: { color: '#f0f0f0' }, ticks: { precision: 0 } }
+                        },
+                        elements: { bar: { borderRadius: 6, borderSkipped: false } },
+                        layout: { padding: { top: 6, bottom: 6 } }
+                    }
+                });
+
+                // Gera mini-gráficos por técnico (doughnut) para cada técnico
+                try {
+                    // Limpa anteriores
+                    chartPorTecnicoObjs.forEach(c => { try { c.destroy(); } catch(e){} });
+                    chartPorTecnicoObjs = [];
+                    const container = document.getElementById('mini-charts-per-tecnico');
+                    if (container) {
+                        container.innerHTML = '';
+                        tecnicos.forEach(tecnico => {
+                            const tPend = resultados.filter(r => r.tecnicoId === tecnico.id && r.status === 'pendente').length;
+                            const tAnd = resultados.filter(r => r.tecnicoId === tecnico.id && r.status === 'andamento').length;
+                            const tConc = resultados.filter(r => r.tecnicoId === tecnico.id && r.status === 'concluida').length;
+                            const total = tPend + tAnd + tConc;
+
+                            const card = document.createElement('div');
+                            card.className = 'mini-chart-card';
+                            card.innerHTML = `<canvas></canvas><div class="mini-label">${tecnico.nome}</div><div class="mini-sub">Total: ${total}</div>`;
+                            container.appendChild(card);
+
+                            const cvs = card.querySelector('canvas');
+                            const ctx = cvs.getContext('2d');
+
+                            const ch = new Chart(ctx, {
+                                type: 'doughnut',
+                                data: { labels: ['Pendente','Andamento','Concluída'], datasets: [{ data: [tPend,tAnd,tConc], backgroundColor: ['#f39c12','#ff9f00','#2ecc71'] }] },
+                                options: { responsive: true, maintainAspectRatio: false, cutout: '60%', plugins: { legend: { display: false }, tooltip: { callbacks: { label: function(ctx){ return ctx.label + ': ' + ctx.formattedValue; } } } } }
+                            });
+
+                            chartPorTecnicoObjs.push(ch);
+                        });
+                    }
+                } catch (e) {
+                    console.warn('Erro ao gerar mini-gráficos por técnico:', e);
+                    const container = document.getElementById('mini-charts-per-tecnico'); if (container) container.innerHTML = '<p>Erro ao gerar mini-gráficos.</p>';
+                }
+
+                const ctxSet = document.getElementById('chart-setores').getContext('2d');
+                const gradSet = ctxSet.createLinearGradient(0,0,0,180);
+                gradSet.addColorStop(0,'#eaffc7');
+                gradSet.addColorStop(1,'#39ff14');
+                chartSetoresObj = new Chart(ctxSet, {
+                    type: 'bar',
+                    data: { labels: setores, datasets: [{ label: 'Quantidade de OS', data: setorData, backgroundColor: gradSet }] },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false }, tooltip: { callbacks: { label: function(ctx){ return ctx.dataset.label + ': ' + ctx.formattedValue; } } } },
+                        scales: { x: { grid: { display: false } }, y: { beginAtZero: true, grid: { color: '#f0f0f0' } } },
+                        elements: { bar: { borderRadius: 8, borderSkipped: false } },
+                        layout: { padding: { top: 6, bottom: 6 } }
+                    }
+                });
+
+                // Gráfico de Máquinas (top 10)
+                try { if (chartMaquinasObj) { chartMaquinasObj.destroy(); chartMaquinasObj = null; } } catch (e) {}
+                const maquinaCountsMap = {};
+                resultados.forEach(r => {
+                    const id = r.maquinaId || null;
+                    if (!id) return;
+                    maquinaCountsMap[id] = (maquinaCountsMap[id] || 0) + 1;
+                });
+                const maquinasCountsArr = Object.entries(maquinaCountsMap).map(([id,count]) => {
+                    const m = maquinas.find(x => x.id === id) || { nome: id, patrimonio: '' };
+                    const label = `${m.nome}${m.patrimonio ? ' - ' + m.patrimonio : ''}`;
+                    return { id, label, count };
+                }).sort((a,b) => b.count - a.count).slice(0,10);
+
+                const maquinaLabels = maquinasCountsArr.map(x => x.label);
+                const maquinaData = maquinasCountsArr.map(x => x.count);
+
+                const ctxMaq = document.getElementById('chart-maquinas').getContext('2d');
+                const gradMaq = ctxMaq.createLinearGradient(0,0,0,160);
+                gradMaq.addColorStop(0,'#80deea');
+                gradMaq.addColorStop(1,'#00bcd4');
+                chartMaquinasObj = new Chart(ctxMaq, {
+                    type: 'bar',
+                    data: { labels: maquinaLabels, datasets: [{ label: 'Quantidade de OS', data: maquinaData, backgroundColor: gradMaq }] },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false }, tooltip: { callbacks: { label: function(ctx){ return ctx.dataset.label + ': ' + ctx.formattedValue; } } } },
+                        scales: { x: { ticks: { autoSkip: true, maxRotation: 45, minRotation: 0 }, grid: { display: false } }, y: { beginAtZero: true, grid: { color: '#f0f0f0' } } },
+                        elements: { bar: { borderRadius: 8, borderSkipped: false } },
+                        layout: { padding: { top: 6, bottom: 6 } }
+                    }
+                });
+            } catch (e) {
+                console.error('Erro ao atualizar gráficos:', e);
+                document.getElementById('chart-status').innerHTML = '<p>Erro ao gerar gráfico.</p>';
+                document.getElementById('chart-tecnicos').innerHTML = '<p>Erro ao gerar gráfico.</p>';
+                document.getElementById('chart-setores').innerHTML = '<p>Erro ao gerar gráfico.</p>';
+                document.getElementById('chart-maquinas').innerHTML = '<p>Erro ao gerar gráfico.</p>';
+            }
+        }
+
+        function exportarRelatorioCSV() {
+            if (!relatorioAtual || relatorioAtual.length === 0) { alert('Nenhum dado para exportar.'); return; }
+
+            let csv = 'Número,Solicitante,Setor,Equipamento,Data,Status,Técnico\n';
+            relatorioAtual.forEach(os => {
+                const solicitante = solicitantes.find(s => s.id === os.solicitanteId) || {};
+                const tecnico = tecnicos.find(t => t.id === os.tecnicoId) || {};
+                const statusText = os.status === 'pendente' ? 'Pendente' : os.status === 'andamento' ? 'Em Andamento' : os.status === 'concluida' ? 'Concluída' : 'Cancelada';
+                csv += `"#${os.numero}","${solicitante.nome || ''}","${os.setor}","${os.equipamento}","${formatarData(os.data)}","${statusText}","${tecnico.nome || ''}"\n`;
+            });
+
+            const blob = new Blob(["\uFEFF" + csv], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', `relatorio_os.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function exportarRelatorioTecnicosCSV() {
+            const tbody = document.querySelector('#tabela-tecnicos-resumo tbody');
+            if (!tbody || !tbody.querySelector('tr')) { alert('Nenhum dado para exportar.'); return; }
+
+            let csv = 'Técnico,Pendentes,Concluídas,Total\n';
+            Array.from(tbody.querySelectorAll('tr')).forEach(tr => {
+                const cols = tr.querySelectorAll('td');
+                if (cols.length < 4) return;
+                const nome = cols[0].innerText.replace(/"/g, '""');
+                csv += `"${nome}",${cols[1].innerText},${cols[2].innerText},${cols[3].innerText}\n`;
+            });
+
+            const blob = new Blob(["\uFEFF" + csv], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', `relatorio_tecnicos.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function imprimirRelatorio() {
+            if (!relatorioAtual) return;
+            const originalContents = document.body.innerHTML;
+            const printContents = document.getElementById('relatorios').innerHTML;
+
+            document.body.innerHTML = `
+                <h1>Relatório de OS</h1>
+                ${printContents}
+                <p>Gerado em: ${new Date().toLocaleDateString('pt-BR')}</p>
+            `;
+
+            window.print();
+            document.body.innerHTML = originalContents;
+        }
+
+        // Abre o relatório atual em uma nova janela (visualização)
+        function abrirRelatorioNovaJanela() {
+            const relDiv = document.getElementById('relatorios');
+            if (!relDiv) return alert('Área de relatórios não encontrada.');
+            const summaryHtml = document.getElementById('relatorio-summary') ? document.getElementById('relatorio-summary').outerHTML : '';
+            const tableHtml = document.getElementById('tabela-relatorio') ? document.getElementById('tabela-relatorio').outerHTML : '';
+
+            // Captura imagens dos gráficos (Chart.js ou canvas) com fallback
+            function getChartImage(chartObj, selector) {
+                try {
+                    if (chartObj && typeof chartObj.toBase64Image === 'function') return chartObj.toBase64Image();
+                    const elCanvas = document.querySelector(selector + ' canvas') || document.querySelector(selector + ' canvas');
+                    if (elCanvas && typeof elCanvas.toDataURL === 'function') return elCanvas.toDataURL();
+                } catch (e) { /* ignore */ }
+                return null;
+            }
+            const statusImg = getChartImage(typeof chartStatusObj !== 'undefined' ? chartStatusObj : null, '#chart-status');
+            const tecImg = getChartImage(typeof chartTecnicosObj !== 'undefined' ? chartTecnicosObj : null, '#chart-tecnicos');
+            const setImg = getChartImage(typeof chartSetoresObj !== 'undefined' ? chartSetoresObj : null, '#chart-setores');
+            const maqImg = getChartImage(typeof chartMaquinasObj !== 'undefined' ? chartMaquinasObj : null, '#chart-maquinas');
+
+            let chartsHtml = '<div style="display:flex;flex-wrap:wrap;gap:12px;margin:12px 0;">';
+            if (statusImg) chartsHtml += `<div style="flex:1;min-width:220px"><h3 style="margin:6px 0;color:#00843d">OS por Status</h3><img src="${statusImg}" style="max-width:100%;height:auto;border:1px solid #ddd;padding:4px;background:#fff"></div>`;
+            else chartsHtml += `<div style="flex:1;min-width:220px"><h3 style="margin:6px 0;color:#00843d">OS por Status</h3><p>Gráfico indisponível</p></div>`;
+            if (tecImg) chartsHtml += `<div style="flex:1;min-width:220px"><h3 style="margin:6px 0;color:#00843d">OS por Técnico</h3><img src="${tecImg}" style="max-width:100%;height:auto;border:1px solid #ddd;padding:4px;background:#fff"></div>`;
+            else chartsHtml += `<div style="flex:1;min-width:220px"><h3 style="margin:6px 0;color:#00843d">OS por Técnico</h3><p>Gráfico indisponível</p></div>`;
+            if (setImg) chartsHtml += `<div style="flex:1;min-width:220px"><h3 style="margin:6px 0;color:#00843d">OS por Setor</h3><img src="${setImg}" style="max-width:100%;height:auto;border:1px solid #ddd;padding:4px;background:#fff"></div>`;
+            else chartsHtml += `<div style="flex:1;min-width:220px"><h3 style="margin:6px 0;color:#00843d">OS por Setor</h3><p>Gráfico indisponível</p></div>`;
+            if (maqImg) chartsHtml += `<div style="flex:1;min-width:220px"><h3 style="margin:6px 0;color:#00843d">OS por Máquina</h3><img src="${maqImg}" style="max-width:100%;height:auto;border:1px solid #ddd;padding:4px;background:#fff"></div>`;
+            else chartsHtml += `<div style="flex:1;min-width:220px"><h3 style="margin:6px 0;color:#00843d">OS por Máquina</h3><p>Gráfico indisponível</p></div>`;
+            chartsHtml += '</div>';
+
+            const html = `<!DOCTYPE html><html lang="pt-BR"><head><meta charset="utf-8"><title>Relatório de OS</title><style>body{font-family:Arial,sans-serif;margin:20px}h1{color:#00843d}table{width:100%;border-collapse:collapse}th,td{border:1px solid #ddd;padding:6px;text-align:left}.print-btn{display:inline-block;padding:8px 14px;background:#39ff14;color:#111;border-radius:6px;border:none;font-weight:bold;cursor:pointer;margin-bottom:12px}</style></head><body><h1>Relatório de OS</h1><p>Gerado em: ${new Date().toLocaleString()}</p><button class="print-btn" onclick="window.print()">Imprimir Relatório</button>${chartsHtml}${summaryHtml}${tableHtml}</body></html>`;
+            const novaJanela = window.open('', '_blank');
+            if (!novaJanela) { alert('Não foi possível abrir a nova janela. Verifique o bloqueador de pop-ups.'); return; }
+            novaJanela.document.write(html);
+            novaJanela.document.close();
+        }
+
         function gerarRelatorioCompleto() {
-            // Implementação simplificada - na prática você geraria um PDF ou Excel
-            alert('Relatório completo gerado com sucesso!');
+            gerarRelatorio('completo');
         }
         
         function exportarHistoricoExcel() {
@@ -1771,6 +3602,23 @@ function abrirOSNovaPagina(osId) {
             <h3>Solução Aplicada</h3>
             ${solucaoHtml}
         </div>
+        <div class='os-details os-times'>
+            <h3>Horário do Serviço</h3>
+            ${ (os.servicos && os.servicos.length) ? os.servicos.map(s => `
+                <div style="margin-bottom:10px;">
+                    <strong>${s}</strong>
+                    <div style="margin-top:6px;">
+                        <span style="display:inline-block; min-width:160px; border-bottom:1px solid #000; padding-bottom:6px;"></span> <small>Hora Início</small>
+                        <span style="display:inline-block; min-width:160px; border-bottom:1px solid #000; padding-bottom:6px; margin-left:24px;"></span> <small>Hora Término</small>
+                    </div>
+                </div>
+            `).join('') : `
+                <div style="margin-top:6px;">
+                    <span style="display:inline-block; min-width:160px; border-bottom:1px solid #000; padding-bottom:6px;"></span> <small>Hora Início</small>
+                    <span style="display:inline-block; min-width:160px; border-bottom:1px solid #000; padding-bottom:6px; margin-left:24px;"></span> <small>Hora Término</small>
+                </div>
+            ` }
+        </div>
         <div class='os-signatures'>
             <div class='os-signature'>
                 <p>______________________________</p>
@@ -1803,5 +3651,6 @@ function abrirOSNovaPagina(osId) {
     }, 300);
 }
     </script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </body>
 </html>
