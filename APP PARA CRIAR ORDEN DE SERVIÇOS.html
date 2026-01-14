@@ -1407,6 +1407,13 @@ document.addEventListener('DOMContentLoaded', function() {
                         });
                     }
                     if (tabId === 'historico-os') atualizarTabelaHistorico();
+                    if (tabId === 'maquinas') {
+                        carregarMaquinasFirestore(function() {
+                            atualizarTabelaMaquinas();
+                            atualizarSelectMaquinas();
+                            atualizarSelectPreventivasSetor();
+                        });
+                    }
                     if (tabId === 'pecas') {
                         // Atualiza lista de máquinas antes de exibir peças (quando possível)
                         if (typeof db !== 'undefined') {
